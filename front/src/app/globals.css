@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* кнопка для Connect */
+.animated-gradient-btn {
+  position: relative;
+  display: inline-block;
+  padding: 1.3em 3em;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border-radius: 2em;
+  border: none;
+  overflow: hidden;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(100, 100, 200, 0.10);
+  transition: 
+    background 0.3s,
+    color 0.3s,
+    transform 0.08s cubic-bezier(.15,.8,.5,1);
+}
+
+.animated-gradient-btn::before {
+  content: "";
+  position: absolute;
+  inset: -3px; 
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    #ff00cc,
+    #3333ff,
+    #00ffcc,
+    #ffcc00,
+    #ff00cc 100%
+  );
+  z-index: 0;
+  animation: rotate-gradient 2s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  0% { filter: hue-rotate(0deg);}
+  100% { filter: hue-rotate(360deg);}
+}
+
+.animated-gradient-btn > span {
+  position: relative;
+  z-index: 1;
+}
+
+.animated-gradient-btn:active {
+  transform: scale(0.96) translateY(1.5px);
+  box-shadow: 0 1px 6px rgba(100, 100, 200, 0.07);
+}
+
+.animated-gradient-btn:hover {
+  background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+  color: #fff;
+  transition: background 0.25s, color 0.25s;
+}
+
+.animated-gradient-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #ffcc00aa;
+}
+/* _____ */
+
+/* контейнер для данных пользователя */
+.top-right-container {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  min-width: 320px;
+  min-height: 120px;
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 1.5rem 2rem;
+  background: rgba(37, 37, 37, 0.97);
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14), 0 1.5px 5px rgba(40,40,60,0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: auto;
+}
+/* _____ */
+
+/* небольшая черная кнопка */
+.small-black-button {
+  display: inline-block;
+  padding: 0.5em 1.4em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #181818;
+  border: none;
+  border-radius: 1.4em;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0,0,0,0.09);
+}
+
+.small-black-button:hover,
+.small-black-button:focus {
+  background: #262626;
+  outline: none;
+  transform: translateY(-1px) scale(1.04);
+}
+
+.small-black-button:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/* _____ */
+
+
+/* контейнер по центру экрана */
+.centered-container {
+  min-height: 50vh;         /* Занимает всю высоту экрана */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* Центрирует по горизонтали */
+  align-items: center;       /* Центрирует по вертикали */      /* Можно добавить фоновый цвет */
+}
+/* _____ */
+
+/* красный параграф для ошибок */
+.error-message {
+  color: #d32f2f;         /* Ярко-красный */
+  font-size: 1rem;
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+/* _____ */
+
+/* зеленый параграф */
+.green-paragraph {
+  color: #22b14c;   
+  text-align: center;         
+}
+/* _____ */
+
+/* заголовок по центру */
+.centered-title {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 2.2rem;           
+  font-weight: 700;             
+  color: #30c46c;               
+  position: relative;
+  padding-bottom: 10px;
+
+  background: linear-gradient(90deg, #30c46c 0%, #41e5d9 100%);
+  background-repeat: no-repeat;
+  background-size: 60% 4px;
+  background-position: center 100%;
+ 
+  text-shadow: 0 2px 8px rgba(48,196,108,0.15);
+  border-radius: 6px 6px 0 0;
+ 
+  opacity: 0.93;
+  transition: font-size 0.2s, color 0.2s;
+}
+.centered-title:hover {
+  font-size: 2.35rem;
+  opacity: 1;
+}
+/* _____ */
+
+/* фдрес и этикетка у  края */
+.address-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  justify-content: flex-start;
+}
+
+/* баланс */
+.eth-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  justify-content: flex-start;
+}
+
+/* центрирование кнопки */
+.disconnect-row {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
