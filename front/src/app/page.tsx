@@ -4,14 +4,14 @@ import { WagmiProvider, http, createConfig } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import App from "@/components/App";
+import App from "@/app/App";
 
 const newHardhat = { ...hardhat, id: 1337}; 
 
-const wagmiConfig = createConfig({
+export const wagmiConfig = createConfig({
   chains: [newHardhat, sepolia],
   transports: {
-    [hardhat.id]: http(),
+    [newHardhat.id]: http(),
     [sepolia.id]: http(),
   },
 });

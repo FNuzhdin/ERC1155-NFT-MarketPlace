@@ -9,12 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pinata/sdk": "^2.1.0",
     "ethers": "^6.14.1",
+    "formdata-node": "^6.0.3", 
+    "formdata-polyfill": "^4.0.10",
     "next": "15.3.2",
     "nft.storage": "^7.2.0",
+    "node-fetch": "^3.3.2",
+    "pinata-web3": "^0.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "wagmi": "^2.15.3"
+    "react-icons": "^5.5.0",
+    "wagmi": "^2.15.3",
+    "web3-file": "^0.2.0",
+    "web3.storage": "^4.5.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

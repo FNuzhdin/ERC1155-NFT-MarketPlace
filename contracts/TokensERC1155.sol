@@ -40,7 +40,7 @@ contract TokensERC1155 is
         require(bytes(tokenURI).length > 0, "Empty URI!");
         require(
             _currentTokenId + collectionLength < type(uint256).max,
-            "Max supply reached!"
+            "Max totalSupply reached!"
         );
         _;
     }
@@ -57,7 +57,10 @@ contract TokensERC1155 is
         _unpause();
     }
 
-    function mint(
+    /** @dev
+     * This function for mint new FT
+     */
+    function mintNewFT(
         address to,
         string memory tokenURI,
         uint256 value
@@ -69,9 +72,22 @@ contract TokensERC1155 is
         _currentTokenId++;
     }
 
+    /** @dev
+     * This function for mint FT that minted before
+     */
+    function mintFT(address to, uint256 id, uint256 value) external onlyOwner {
+        require(value > 1, "Amount must be more then 1!");
+
+        _mint(to, id, value, "");
+    }
+
     /* будте подходить только для случаев, если мы всю коллекцию
     минтим на один адрес */
-    function mint(
+    /** @dev
+     * This function for mint NFT collection
+     * We don't recommend mint tokens on Market address
+     */
+    function mintNFT(
         address to,
         string memory tokenURI,
         uint256 collectionLength,
@@ -110,7 +126,8 @@ contract TokensERC1155 is
     }
 
     /* вывод только для токенов */
-    function withdraw(uint256 id) public onlyOwner {
+    /* вывод одного токена (NFT или FT) */
+    function withdrawSingle(uint256 id) public onlyOwner {
         uint256 currentBalance = balanceOf(address(this), id);
 
         _safeTransferFrom(address(this), owner, id, currentBalance, "");
@@ -118,10 +135,13 @@ contract TokensERC1155 is
 
     /* массив с accounts - это массив наполненный одним адресом данного контракта. 
     создается во фронтенде */
-    function withdraw(
+    /* вывод любых токенов (FT или NFT) в формате Batch. Исключительно на адрес
+    owner этого контракта */
+    function withdrawBatch(
         uint256[] memory ids,
         address[] memory accounts
     ) public onlyOwner {
+        require(ids.length == accounts.length, "Incorrect length!"); 
         uint256[] memory currentBalances = new uint256[](ids.length);
 
         currentBalances = balanceOfBatch(accounts, ids);
@@ -187,10 +207,17 @@ contract TokensERC1155 is
     function uri(uint256 tokenId) public view override(ERC1155, ITokensERC1155) returns (string memory) {
         string memory tokenURI = _tokenURIs[tokenId];
 
-        return
+        if(totalSupply(tokenId) > 1) {
+            return 
             bytes(tokenURI).length > 0
-                ? string.concat(tokenURI, tokenId.toString(), ".json")
-                : "";
+            ? tokenURI
+            : "";
+        } else {
+            return
+                bytes(tokenURI).length > 0
+                    ? string.concat(tokenURI, "metadata_", tokenId.toString(), ".json")
+                    : "";
+            }
     } /* обязательно переопределяем для ERC1155URIStorage для корректной работы URIStorage */ /* если мы 
     не используем ERC1155URIStorage, то нам не требуется делать переопредление с 
     override(ERC1155, ERC1155URIStorage)*/ /* в консп */

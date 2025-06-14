@@ -16,10 +16,13 @@ describe("TokensERC1155 tests", async () => {
   }
 
   it("After deploy", async () => {
-    const { deployer, token } = await loadFixture(deploy);
+    const { deployer, signer, token } = await loadFixture(deploy);
 
     expect(await token.owner()).to.eq(deployer.address);
     expect(await token.currentTokenId()).to.eq(0);
+    await expect(token.connect(signer).currentTokenId()).to.revertedWith(
+      "Not an owner!"
+    );
     expect(await token.paused()).to.eq(false);
     expect(await token["totalSupply()"]()).to.eq(0);
   });
@@ -50,14 +53,12 @@ describe("TokensERC1155 tests", async () => {
     expect(await token.paused()).to.eq(true);
 
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        tokenURI,
-        length,
-        valuesArr
-      )
+      token.mintNFT(deployer.address, tokenURI, length, valuesArr)
     ).to.revertedWithCustomError(token, "EnforcedPause");
 
+    await expect(token.connect(signer).unpause()).to.revertedWith(
+      "Not an owner!"
+    );
     const tx3 = await token.unpause();
     await tx3.wait();
 
@@ -97,7 +98,7 @@ describe("TokensERC1155 tests", async () => {
     );
 
     for (let i = 0; i < length; i++) {
-      expect(await token.uri(i)).to.eq(`${tokenURI}${ids[i]}.json`);
+      expect(await token.uri(i)).to.eq(`${tokenURI}metadata_${ids[i]}.json`);
     }
     expect(await token.uri(8)).to.eq("");
 
@@ -117,63 +118,29 @@ describe("TokensERC1155 tests", async () => {
     const tokenURI = "ipfs://AnYCIDFolder/";
     const values = Array.from({ length }, () => 1);
     await expect(
-      token
-        .connect(signer)
-        ["mint(address,string,uint256,uint256[])"](
-          signer.address,
-          tokenURI,
-          length,
-          values
-        )
+      token.connect(signer).mintNFT(signer.address, tokenURI, length, values)
     ).to.revertedWith("Not an owner!");
 
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        tokenURI,
-        1,
-        [1]
-      )
+      token.mintNFT(deployer.address, tokenURI, 1, [1])
     ).to.revertedWith("The collection must be 2 to 50 NFT!");
 
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        "",
-        length,
-        values
-      )
+      token.mintNFT(deployer.address, "", length, values)
     ).to.revertedWith("Empty URI!");
 
-    await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        ethers.ZeroAddress,
-        tokenURI,
-        length,
-        values
-      )
-    )
+    await expect(token.mintNFT(ethers.ZeroAddress, tokenURI, length, values))
       .to.revertedWithCustomError(token, "ERC1155InvalidReceiver")
       .withArgs(ethers.ZeroAddress);
 
     const incorrectValues = [1, 1];
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        tokenURI,
-        length,
-        incorrectValues
-      )
+      token.mintNFT(deployer.address, tokenURI, length, incorrectValues)
     ).to.revertedWith("Incorrect length!");
 
     const incorrectLength = 51;
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        tokenURI,
-        incorrectLength,
-        values
-      )
+      token.mintNFT(deployer.address, tokenURI, incorrectLength, values)
     ).to.revertedWith("The collection must be 2 to 50 NFT!");
 
     const maxUint256 = ethers.MaxUint256 - BigInt(3);
@@ -184,19 +151,14 @@ describe("TokensERC1155 tests", async () => {
     ]);
 
     await expect(
-      token["mint(address,string,uint256,uint256[])"](
-        deployer.address,
-        tokenURI,
-        length,
-        values
-      )
-    ).to.revertedWith("Max supply reached!");
+      token.mintNFT(deployer.address, tokenURI, length, values)
+    ).to.revertedWith("Max totalSupply reached!");
   });
 
   it("Mint FT", async () => {
-    const { deployer, token } = await loadFixture(deploy);
+    const { deployer, signer, token } = await loadFixture(deploy);
 
-    const { tokenURI, value, tx } = await mintFT(token, deployer.address);
+    const { tokenURI, value, tx } = await mintNewFT(token, deployer.address);
 
     const zeroAddr = ethers.ZeroAddress;
     await expect(tx)
@@ -207,16 +169,18 @@ describe("TokensERC1155 tests", async () => {
 
     expect(await token.balanceOf(deployer.address, 0)).to.eq(value);
 
-    expect(await token.uri(0)).to.eq(`${tokenURI}0.json`);
+    expect(await token.uri(0)).to.eq(`${tokenURI}`);
 
     const contractAddr = await token.getAddress();
-    const { tx: tx2 } = await mintFT(token, contractAddr);
+    const { tx: tx2 } = await mintNewFT(token, contractAddr);
 
     await expect(tx2)
       .to.emit(token, "TransferSingle")
       .withArgs(deployer.address, zeroAddr, token.target, 1, value);
 
     expect(await token.balanceOf(token.target, 1)).to.eq(value);
+    expect(await token.mintFT(deployer.address, 0, 1000)).to.not.be.reverted;
+    expect(await token["totalSupply(uint256)"](0)).to.eq(11000);
   });
 
   it("Mint FT: reverts", async () => {
@@ -225,27 +189,19 @@ describe("TokensERC1155 tests", async () => {
     const tokenURI = "ipfs://AnYCIDFolder/";
     const value = 10000;
     await expect(
-      token
-        .connect(signer)
-        ["mint(address,string,uint256)"](signer.address, tokenURI, value)
+      token.connect(signer).mintNewFT(signer.address, tokenURI, value)
     ).to.revertedWith("Not an owner!");
 
-    await expect(
-      token["mint(address,string,uint256)"](deployer.address, "", value)
-    ).to.revertedWith("Empty URI!");
+    await expect(token.mintNewFT(deployer.address, "", value)).to.revertedWith(
+      "Empty URI!"
+    );
 
     const incorrectValue = 1;
     await expect(
-      token["mint(address,string,uint256)"](
-        deployer.address,
-        tokenURI,
-        incorrectValue
-      )
+      token.mintNewFT(deployer.address, tokenURI, incorrectValue)
     ).to.revertedWith("Amount must be more then 1!");
 
-    await expect(
-      token["mint(address,string,uint256)"](ethers.ZeroAddress, tokenURI, value)
-    )
+    await expect(token.mintNewFT(ethers.ZeroAddress, tokenURI, value))
       .to.revertedWithCustomError(token, "ERC1155InvalidReceiver")
       .withArgs(ethers.ZeroAddress);
 
@@ -257,8 +213,15 @@ describe("TokensERC1155 tests", async () => {
     ]);
 
     await expect(
-      token["mint(address,string,uint256)"](deployer.address, tokenURI, value)
-    ).to.revertedWith("Max supply reached!");
+      token.mintNewFT(deployer.address, tokenURI, value)
+    ).to.revertedWith("Max totalSupply reached!");
+
+    await expect(
+      token.connect(signer).mintFT(deployer.address, 0, 1000)
+    ).to.revertedWith("Not an owner!");
+    await expect(token.mintFT(deployer.address, 0, 1)).to.revertedWith(
+      "Amount must be more then 1!"
+    );
   });
 
   it("Receive revert", async () => {
@@ -285,11 +248,11 @@ describe("TokensERC1155 tests", async () => {
     const { deployer, signer, token } = await loadFixture(deploy);
 
     const contractAddr = await token.getAddress();
-    const { value } = await mintFT(token, contractAddr);
+    const { value } = await mintNewFT(token, contractAddr);
 
     expect(await token.balanceOf(contractAddr, 0)).to.eq(value);
 
-    const tx2 = await token["withdraw(uint256)"](0);
+    const tx2 = await token.withdrawSingle(0);
     await tx2.wait();
 
     expect(await token.balanceOf(contractAddr, 0)).to.eq(0);
@@ -304,10 +267,7 @@ describe("TokensERC1155 tests", async () => {
 
     const ids = Array.from({ length }, (_, index) => index + 1);
 
-    const tx4 = await token["withdraw(uint256[],address[])"](
-      ids,
-      contractAddrsArr
-    );
+    const tx4 = await token.withdrawBatch(ids, contractAddrsArr);
     await tx4.wait();
 
     const zeroValues = Array.from({ length }, () => 0);
@@ -392,7 +352,7 @@ describe("TokensERC1155 tests", async () => {
   it("Approve and safeTransferFrom: FT", async () => {
     const { deployer, signer, token } = await loadFixture(deploy);
 
-    const { value } = await mintFT(token, deployer.address);
+    const { value } = await mintNewFT(token, deployer.address);
 
     const id = 0;
     const data = ethers.toUtf8Bytes("any data");
@@ -446,7 +406,7 @@ describe("TokensERC1155 tests", async () => {
   it("Burn!", async () => {
     const { deployer, signer, token } = await loadFixture(deploy);
 
-    const { value } = await mintFT(token, deployer.address);
+    const { value } = await mintNewFT(token, deployer.address);
 
     const id = 0;
     const tx1 = await token.burn(deployer.address, id, value / 2);
@@ -493,12 +453,7 @@ async function mintNFT(
   const valuesArr = Array.from({ length }, () => 1);
   const tokenURI = "ipfs://AnYCIDFolder/";
 
-  const tx = await token["mint(address,string,uint256,uint256[])"](
-    ownerAddress,
-    tokenURI,
-    length,
-    valuesArr
-  );
+  const tx = await token.mintNFT(ownerAddress, tokenURI, length, valuesArr);
   await tx.wait();
 
   const ids = Array.from({ length }, (_, index) => index);
@@ -519,7 +474,7 @@ async function mintNFT(
   };
 }
 
-async function mintFT(
+async function mintNewFT(
   token: TokensERC1155,
   ownerAddress: string
 ): Promise<{
@@ -530,11 +485,7 @@ async function mintFT(
   const tokenURI = "ipfs://AnYCIDFolder/";
   const value = 10000;
 
-  const tx = await token["mint(address,string,uint256)"](
-    ownerAddress,
-    tokenURI,
-    value
-  );
+  const tx = await token.mintNewFT(ownerAddress, tokenURI, value);
   await tx.wait();
 
   return { tokenURI, value, tx };

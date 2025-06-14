@@ -10,18 +10,20 @@ interface ITokensERC1155 is IERC1155 {
 
     function unpause() external;
 
-    function mint(address to, string memory tokenURI, uint256 value) external;
+    function mintNewFT(address to, string memory tokenURI, uint256 value) external;
 
-    function mint(
+    function mintFT(address to, uint256 id, uint256 value) external;
+
+    function mintNFT(
         address to,
         string memory tokenURI,
         uint256 collectionLength,
         uint256[] memory values
     ) external;
 
-    function withdraw(uint256 id) external;
+    function withdrawSingle(uint256 id) external;
 
-    function withdraw(uint256[] memory ids, address[] memory accounts) external;
+    function withdrawBatch(uint256[] memory ids, address[] memory accounts) external;
 
     function onERC1155Received(
         address,

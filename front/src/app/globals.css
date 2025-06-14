@@ -25,6 +25,26 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* header */
+.header {
+  background: rgba(37, 37, 37, 0.97);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+/*_________ */
+
+/* логотип маркета */
+.logo {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+/*_________ */
+
 /* кнопка для Connect */
 .animated-gradient-btn {
   position: relative;
@@ -38,17 +58,15 @@ body {
   background: #fff;
   color: #222;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(100, 100, 200, 0.10);
-  transition: 
-    background 0.3s,
-    color 0.3s,
-    transform 0.08s cubic-bezier(.15,.8,.5,1);
+  box-shadow: 0 4px 16px rgba(100, 100, 200, 0.1);
+  transition: background 0.3s, color 0.3s,
+    transform 0.08s cubic-bezier(0.15, 0.8, 0.5, 1);
 }
 
 .animated-gradient-btn::before {
   content: "";
   position: absolute;
-  inset: -3px; 
+  inset: -3px;
   border-radius: inherit;
   padding: 2px;
   background: conic-gradient(
@@ -64,8 +82,12 @@ body {
 }
 
 @keyframes rotate-gradient {
-  0% { filter: hue-rotate(0deg);}
-  100% { filter: hue-rotate(360deg);}
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
 }
 
 .animated-gradient-btn > span {
@@ -90,23 +112,163 @@ body {
 }
 /* _____ */
 
+/* заголовок для маркета */
+.h1 {
+  font-size: 3rem;           /* крупный размер шрифта */
+  font-weight: 800;          /* очень жирный */
+  letter-spacing: 0.04em;    /* немного увеличенное расстояние между буквами */
+  color: #232323;            /* глубокий тёмный цвет */
+  text-align: center;        /* по центру */
+  margin-top: 2.5rem;        /* верхний отступ */
+  margin-bottom: 2rem;       /* нижний отступ */
+  line-height: 1.1;          /* плотное межстрочное расстояние */
+  text-shadow: 0 4px 16px rgba(0,0,0,0.07); /* мягкая тень для объёма */
+}
+
+.h1-gradient {
+  background: linear-gradient(90deg, #00c3ff 0%, #ffff1c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.h2 {
+  font-size: 3rem;           /* крупный размер шрифта */
+  font-weight: 800;          /* очень жирный */
+  letter-spacing: 0.04em;    /* немного увеличенное расстояние между буквами */
+  color: #232323;            /* глубокий тёмный цвет */
+  text-align: center;        /* по центру */
+  margin-top: 0.5rem;        /* верхний отступ */
+  margin-bottom: 0.8rem;       /* нижний отступ */
+  line-height: 1.1;          /* плотное межстрочное расстояние */
+  text-shadow: 0 4px 16px rgba(0,0,0,0.07); 
+}
+/*___________*/
+
 /* контейнер для данных пользователя */
 .top-right-container {
+  margin-top: 10px;
   position: fixed;
-  top: 2rem;
   right: 2rem;
   min-width: 320px;
   min-height: 120px;
   max-width: 90vw;
   max-height: 90vh;
   padding: 1.5rem 2rem;
-  background: rgba(37, 37, 37, 0.97);
+  background: rgba(37, 37, 37, 0.7);
   border-radius: 1.25rem;
-  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14), 0 1.5px 5px rgba(40,40,60,0.08);
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
+    0 1.5px 5px rgba(40, 40, 60, 0.08);
   display: flex;
   flex-direction: column;
   z-index: 1000;
   overflow: auto;
+}
+/* _____ */
+
+/* контейнер для элементов */
+.containers-wrapper {
+  padding-bottom: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: flex-start; /* можно center, если нужно по центру */
+  align-items: flex-start;
+  margin: 2rem;
+}
+/*__________*/
+
+/* контейнер для элементов */
+.flex-container-standart {
+  width: 310px;
+  min-height: 240px;
+  padding: 1.5rem 2rem;
+  background: rgba(37, 37, 37, 0.97);
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
+    0 1.5px 5px rgba(40, 40, 60, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  margin: 0; /* убираем внешний отступ, gap у wrapper */
+}
+/* _____ */
+
+/* среднего размера */
+.flex-container-medium {
+  width: 300px;
+  height: 280px;
+  padding: 1.5rem 2rem;
+  background: rgba(37, 37, 37, 0.97);
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
+    0 1.5px 5px rgba(40, 40, 60, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  margin: 0; /* убираем внешний отступ, gap у wrapper */
+}
+
+/* без размера */
+.flex-container-unsize {
+  min-width: 100px;
+  min-height: 100px;
+  padding: 1.5rem 2rem;
+  background: rgba(37, 37, 37, 0.97);
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
+    0 1.5px 5px rgba(40, 40, 60, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  margin: 0; /* убираем внешний отступ, gap у wrapper */
+}
+/* _____ */
+
+/* для изображений */
+.img-limited {
+  max-width: 250px;
+  max-height: 250px;
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+/*____________*/
+
+/* input для id  */
+.input-white-border {
+  width: 150px;
+  text-align: center;
+  font-size: 1rem;
+  border: 2px solid #fff;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+/* _____ */
+
+/* зеленый заголовок h1*/
+.h1-green {
+  color: #30c46c;
+  font-size: 1.5rem;
+  text-decoration: underline;
+  font-weight: bold;
+  margin-bottom: 0, 5rem;
+  margin-top: 1rem;
+}
+/* _____ */
+
+/* зеленый заголовок h2*/
+.h2-green {
+  margin-top: 0.5rem;
+  margin-bottom: 5px;
+  color: #30c46c;
+  font-weight: 600;
 }
 /* _____ */
 
@@ -122,7 +284,7 @@ body {
   border-radius: 1.4em;
   cursor: pointer;
   transition: background 0.18s, transform 0.08s;
-  box-shadow: 0 1.5px 6px rgba(0,0,0,0.09);
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
 }
 
 .small-black-button:hover,
@@ -138,20 +300,148 @@ body {
 }
 /* _____ */
 
+/* черная кнопка для функций */
+.small-black-button2 {
+  display: inline-block;
+  padding: 0.25em 1.4em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #181818;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
+}
+
+.small-black-button2:hover,
+.small-black-button2:focus {
+  background: #262626;
+  outline: none;
+}
+
+.small-black-button2:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/* _____ */
+
+/* черная кнопка для покупки */
+.small-green-button {
+  display: inline-block;
+  padding: 0.25em 1.4em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  background: #107f3d;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
+}
+
+.small-green-button:hover,
+.small-green-button:focus {
+  background: #262626;
+  outline: none;
+}
+
+.small-green-button:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/* _____ */
+
+/* черная кнопка для продажи */
+.small-orange-button {
+  display: inline-block;
+  padding: 0.25em 1.4em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  background: #ffa43e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
+}
+
+.small-orange-button:hover,
+.small-orange-button:focus {
+  background: #262626;
+  outline: none;
+}
+
+.small-orange-button:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/* _____ */
+
+/* кнопка для header */
+.small-button-header {
+  display: inline-block;
+  padding: 0.25em 1.4em;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  background: #107f3c;
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
+}
+
+.small-button-header:hover,
+.small-button-header:focus {
+  background: #262626;
+  color: white;
+  outline: none;
+}
+
+.small-button-header:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/* _____ */
+
+/* контейнер для кнопки */
+.transparent-sidebar-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  margin-top: 20px;
+}
+/* _____ */
+
+/* контейнер для кнопки */
+.transparent-sidebar-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-top: 20px;
+}
+/* _____ */
 
 /* контейнер по центру экрана */
 .centered-container {
-  min-height: 50vh;         /* Занимает всю высоту экрана */
+  min-height: 50vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;   /* Центрирует по горизонтали */
-  align-items: center;       /* Центрирует по вертикали */      /* Можно добавить фоновый цвет */
+  justify-content: center;
+  align-items: center;
 }
 /* _____ */
 
 /* красный параграф для ошибок */
 .error-message {
-  color: #d32f2f;         /* Ярко-красный */
+  color: #d32f2f;
   font-size: 1rem;
   margin-top: 12px;
   text-align: center;
@@ -160,10 +450,17 @@ body {
 }
 /* _____ */
 
+/* красный параграф для ошибок */
+.simple-error-message {
+  color: #ff3333;
+  display: inline;
+}
+/* _____ */
+
 /* зеленый параграф */
 .green-paragraph {
-  color: #22b14c;   
-  text-align: center;         
+  color: #22b14c;
+  text-align: center;
 }
 /* _____ */
 
@@ -171,9 +468,9 @@ body {
 .centered-title {
   text-align: center;
   margin-bottom: 16px;
-  font-size: 2.2rem;           
-  font-weight: 700;             
-  color: #30c46c;               
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #30c46c;
   position: relative;
   padding-bottom: 10px;
 
@@ -181,10 +478,10 @@ body {
   background-repeat: no-repeat;
   background-size: 60% 4px;
   background-position: center 100%;
- 
-  text-shadow: 0 2px 8px rgba(48,196,108,0.15);
+
+  text-shadow: 0 2px 8px rgba(48, 196, 108, 0.15);
   border-radius: 6px 6px 0 0;
- 
+
   opacity: 0.93;
   transition: font-size 0.2s, color 0.2s;
 }
@@ -194,7 +491,11 @@ body {
 }
 /* _____ */
 
-/* фдрес и этикетка у  края */
+.aquamarine-paragraph {
+  color: #41e5d9;
+}
+
+/* aдрес и этикетка у края */
 .address-row {
   display: flex;
   align-items: center;
@@ -202,6 +503,26 @@ body {
   font-size: 1.05rem;
   justify-content: flex-start;
 }
+/*_________ */
+
+/* footer */
+.footer {
+  margin-top: 40px;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  font-style: italic;
+  background: #232323;
+  color: #b1b1b1;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-top: 2px solid #444;
+  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  z-index: 100;
+}
+/*_________ */
 
 /* баланс */
 .eth-row {
@@ -211,6 +532,23 @@ body {
   font-size: 1.05rem;
   justify-content: flex-start;
 }
+/*_________ */
+
+/* элементы в ряд */
+.simple-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/*_________ */
+
+/* элементы в столбик */
+.vertical-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/*_________ */
 
 /* центрирование кнопки */
 .disconnect-row {
@@ -218,3 +556,75 @@ body {
   justify-content: center;
   margin: 16px 0;
 }
+/*_________ */
+
+/* input для загрузки изображений */
+.upload-label {
+  display: flex;
+  margin-bottom: 15px;
+  margin-top: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 70px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  color: #666;
+  font-family: sans-serif;
+  cursor: pointer;
+  transition: border 0.3s, color 0.3s;
+}
+
+.upload-label:hover {
+  border-color: #3b82f6; /* синий */
+  color: #3b82f6;
+}
+
+.upload-label .plus-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.upload-label .text {
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+.upload-label input[type="file"] {
+  display: none;
+}
+/*_____________*/
+
+/* */
+.orange-p {
+  color: #ffa43e;
+}
+/*_____________*/
+
+/* */
+.small-orange-button {
+  display: inline-block;
+  padding: 0.25em 1.4em;
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  background: #ffa43e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.08s;
+  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
+}
+
+.small-orange-button:hover,
+.small-orange-button:focus {
+  background: #262626;
+  outline: none;
+}
+
+.small-orange-button:active {
+  background: #111;
+  transform: scale(0.97);
+}
+/*_____________*/
