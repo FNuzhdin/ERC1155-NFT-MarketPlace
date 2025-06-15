@@ -42,6 +42,4 @@ interface ITokensERC1155 is IERC1155 {
     ) external view returns(bytes4);
 
     function uri(uint256 tokenId) external view returns(string memory);
-
-    /* добавить оставльные кастомные селекторы функций */
 }

@@ -6,61 +6,69 @@ import "node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
+/**
+ * @title Market
+ * @notice Marketplace contract for buying, selling, and exchanging NFT and FT tokens
+ * based on a custom ERC1155 implementation.
+ * @dev Supports upgradeability via Initializable & OwnableUpgradeable. 
+ * Manages queue-based FT order book and non-custodial ETH withdrawal for sellers.
+ */
 contract Market is Initializable,  OwnableUpgradeable {
+    /**
+     * @notice Current implementation version of the Market 
+     * contract (for upgradeability)
+     */ 
     uint256 implementetionVersion;
-    /* покупка и продажа NFT, FT моего TokenERC1155 */
+    
     TokensERC1155 public token;
 
-    /* массивы нужны, чтобы фронтенду было проще отображать NFT в маркете */
-    /* он будет брать из массива id, смотреть в priceNFT цену и только 
-    тогда отображать для продажи */
+    /// @notice Lists of NFT, FT IDs currently exhibited for sale
     uint256[] public idsNFTExhibited;
     uint256[] public idsFTExhibited; 
-    /* массив нужен, чтобы зафиксировать адреса аккаунтов, которые 
-    выставили свои NFT на продажу */
-    /* пользователю не протребуется делать апрув всех токенов, ему достаточно перевести
-    свой токен на адрес контракта, установить цену и он автоматически поступит в продажу 
-    */
+    
+    /**
+     * @notice Maps NFT IDs to the address of the current 
+     * owner who exhibited it for sale
+     * @dev User only needs to transfer token to contract and 
+     * set price, no global approval required
+     */
     mapping(uint256 id => address tokenOwner) public exhibitedNFTOwners; 
 
-    /* в случае с FT цена подразумевается за 1 токен withDecimals дают uint wei, 
-    который тут и фиксируется */
+    /// @notice NFT, FT prices in wei
     mapping(uint256 id => uint256 price) private _priceNFT;
     mapping(uint256 id => uint256 price) private _priceFT;
 
-    /* для создание очереди нам потребуется head, tail */
-    /* они могут в какой-то момент переполниться, но эту проблему 
-    мы решим за счет upgradable-proxy. сделаем возможным добавлять новые версии 
-    этого контракта */
-    // uint256 private queueHead;
-    // uint256 private queueTail;
-
+    /// @notice FT sale queues: head and tail pointers
     mapping(uint256 id => uint256 head) private _queueHead;
     mapping(uint256 id => uint256 tail) private _queueTail;
 
-    /* создадим для очереди параллельные мэппинги */
+    /** 
+     * @notice FT sale queue: amount and seller of tokens 
+     * for sale at queue index
+     */
     mapping(uint256 id => mapping(uint256 queueIndex => uint256 value)) private valueInQueue;
     mapping(uint256 id => mapping(uint256 queueIndex => address seller)) private sellerInQueue;
 
-    /* отдельный мэппинг, чтобы можно было следить за своей очередью и чтобы
-    можно было выйти из очереди */
-    /* сделать так, чтобы при продаже FT в это мэппинге регистрировалось место 
-    адреса в очереди */
-    /* отсюда тоже нужно удалять, если забирают токены из очереди */
+    /**
+     * @notice For each FT, tracks queue positions for each seller 
+     * (enables sellers to track/cancel their sales)
+     * @dev Should be cleaned up when tokens are withdrawn from the queue
+     */
     mapping(uint256 id => mapping(address seller => uint256[] queueIndexs)) private _placeInQueue;
 
-    /* до востребования */
+    /// @notice ETH owed to sellers, withdrawable on demand
     mapping(address seller => uint256 value) private _toWithdraw; 
      
-    /* используем intitialize для прокси */
+    /**
+     * @notice Initializes the Market contract for proxy use.
+     * @param _token Address of the deployed TokensERC1155 contract
+     */
     function initialize(address payable _token) external initializer {
         __Ownable_init(msg.sender); 
         token = TokensERC1155(_token);
         implementetionVersion = 1; 
     }
 
-    /* эти модификаторый проверяют не только FT это или NFT, но и существует 
-    ли токен, тк если его нет в контракте нашего токена, supply будет 0 */
     modifier onlyFT(uint256 id) {
         require(token.totalSupply(id) > 1, "Only FT!");
         _;
@@ -83,66 +91,106 @@ contract Market is Initializable,  OwnableUpgradeable {
         return implementetionVersion;
     }
 
-    /* посмотреть место в очереди на продажу FT */
+    /**
+     * @notice Returns all queue indices for the caller for a given FT ID.
+     * @param id FT token ID
+     * @return Array of queue indices
+     * @dev Reverts if the caller is not in the queue.
+     */
     function getPlaceInQueue(uint256 id) public view returns(uint256[] memory) {
         require(_placeInQueue[id][msg.sender].length != 0, "You didn't join queque!");
         return _placeInQueue[id][msg.sender];
     }
 
+    /**
+     * @notice Returns the head index for the FT sale queue.
+     * @param id FT token ID
+     */
     function getQueueHead(uint256 id) public view returns(uint256) {
         return _queueHead[id]; 
     }
 
+    /**
+     * @notice Returns the tail index for the FT sale queue.
+     * @param id FT token ID
+     */
     function getQueueTail(uint256 id) public view returns(uint256) {
         return _queueTail[id]; 
     }
 
+    /**
+     * @notice Returns the token amount at a given position in the FT sale queue.
+     * @param id FT token ID
+     * @param queueIndex Position in the sale queue
+     */
     function getValueInQueue(uint256 id, uint256 queueIndex) public view returns(uint256) {
         return valueInQueue[id][queueIndex]; 
     }
 
+    /**
+     * @notice Returns the seller at a given position in the FT sale queue.
+     * @param id FT token ID
+     * @param queueIndex Position in the sale queue
+     */
     function getSellerInQueue(uint256 id, uint256 queueIndex) public view returns(address) {
         return sellerInQueue[id][queueIndex]; 
     }
 
-    /* может посмотреть, сколько eth доступно для вывода*/
+    /// @notice Returns the ETH amount available for withdrawal by the caller.
     function toWithdraw() public view returns(uint256){
         return _toWithdraw[msg.sender];
     }
 
+    /**
+     * @notice Returns the price (in wei) for the given NFT ID.
+     * @param id NFT ID
+     * @dev Reverts if the price is not set.
+     */
     function getPriceNFT(uint256 id) public view returns(uint256) {
         require(_priceNFT[id] != 0, "Haven't price!"); 
         return _priceNFT[id];
-    } /* с этими функциями фронтенд будет работать по той логике, что 
-    цена не может быть нулевой, если она нулевая, то токен во фронте 
-    не отображается */
+    }
 
+    /**
+     * @notice Returns the price (in wei per token) for the given FT ID.
+     * @param id FT token ID
+     * @dev Reverts if the price is not set.
+     */
     function getPriceFT(uint256 id) public view returns(uint256) {
         require(_priceFT[id] != 0, "Haven't price!"); 
         return _priceFT[id];
     }
 
-    /* перегруженная функция исключительно для покупки NFT */
+    /**
+     * @notice Purchases an exhibited NFT for its current price.
+     * @param id NFT ID to buy
+     * @dev Transfers ETH to seller's withdrawable balance and NFT to buyer.
+     * Reverts if NFT is not for sale, price is unset, or payment is incorrect.
+     */
     function buyNFT(uint256 id) public payable onlyNFT(id) {
         require(token.balanceOf(address(this), id) == 1, "Token doesn't sell!");
         require(_priceNFT[id] > 0, "Cost isn't yet set!");
 
         require(msg.value == _priceNFT[id], "Value isn't correct!");
 
-        /* вырезаем из массива экспонирования и получаем владельца токена, 
-        которому записывам прибыль до востребования */
+        // Remove from exhibition and record the owner
         address tokenOwner = _removeFromExhibit(id);
 
-        /* отправляем средства в мэппинг до востребования */
+        // Credit proceeds to seller
         _toWithdraw[tokenOwner] += msg.value;
 
-        /* отправляем покупателю */
+        // Transfer NFT to buyer
         token.safeTransferFrom(address(this), msg.sender, id, 1, "");
     }
 
-    /* вырезать NFT нужно, чтобы они не отображались во фронтенде, 
-    тк FT будет не так много, их не нужно вырезать из массива экспонирования,
-    даже если их объем к продаже будет нулевым */
+    /**
+     * @notice Purchases a specified amount of FT tokens from the sale queue.
+     * @param id FT token ID
+     * @param value Amount of tokens to buy
+     * @dev Distributes ETH among sellers in queue, updates queue pointers, 
+     * transfers tokens to buyer.
+     * Reverts if insufficient tokens, price is unset, or payment is incorrect.
+     */
     function buyFT(uint256 id, uint256 value) public payable onlyFT(id) {
         require(value <= token.balanceOf(address(this), id), "Have not funds!");
         require(_priceFT[id] > 0, "Cost isn't yet set!"); 
@@ -160,7 +208,7 @@ contract Market is Initializable,  OwnableUpgradeable {
 
                 valueInQueue[id][i] = remainder;
 
-                /* средства к получению записываются в мэппинг до востребования */
+                // Credit proceeds to seller
                 _toWithdraw[sellerInQueue[id][i]] += valueForTransfer * _priceFT[id];
                 
                 newQueueHead = i; 
@@ -170,7 +218,6 @@ contract Market is Initializable,  OwnableUpgradeable {
                     delete valueInQueue[id][n];
                     delete sellerInQueue[id][n];
 
-                    /* тут тоже вместо перевода делаем средства до востребования */
                     _toWithdraw[currentSeller] += _valueForTransfer * _priceFT[id];
                 }
                 break;
@@ -178,30 +225,34 @@ contract Market is Initializable,  OwnableUpgradeable {
         }
 
         _queueHead[id] = newQueueHead; 
-        /* переводим ему токены, которые он купил */
+        
+        // Transfer FT tokens to buyer
         token.safeTransferFrom(address(this), msg.sender, id, value, "");
     }
 
-    /* тут может забрать свой NFT, который выставлял на продажу */
-    /* можено сделать аналогичную batch функцию */
+    /**
+     * @notice Removes an exhibited NFT from sale and returns it to the owner.
+     * @param id NFT ID to withdraw from sale
+     * @dev Reverts if caller is not the owner.
+     */
     function stopExhibitNFT(uint256 id) public onlyNFT(id) {
-       
         require(exhibitedNFTOwners[id] == msg.sender, "Your aren't an this token owner!");
 
-        /* вырезаем из массива экспонирования */
         _removeFromExhibit(id);
 
-        /* отправляем этот NFT владельцу */
         token.safeTransferFrom(address(this), msg.sender, id, 1, "");
     }  
 
+    /**
+     * @notice Removes multiple exhibited NFTs from sale and returns them to the owner.
+     * @param ids Array of NFT IDs to withdraw
+     */
     function stopExhibitNFTBatch(uint256[] calldata ids) public {
         uint256[] memory values = new uint256[](ids.length);
 
         for(uint256 i = 0; i < ids.length; i++) {
             require(exhibitedNFTOwners[ids[i]] == msg.sender, "Your aren't an this token owner!");
 
-            /* вырезаем из массива экспонирования */
             _removeFromExhibit(ids[i]);
 
             values[i] = 1;
@@ -210,10 +261,11 @@ contract Market is Initializable,  OwnableUpgradeable {
         token.safeBatchTransferFrom(address(this), msg.sender, ids, values, "");
     } 
 
-    /* логика удаления из очереди с возвратом тех токенов, которые не были
-        проданы за время экспонирования. для того 
-        ,чтобы забрать eth, полученный
-        от продажи части токенов, нужно обратиться в отдельную функцию (withdrawETH) */
+    /**
+     * @notice Removes FT tokens from the sale queue, returning unsold tokens to the seller.
+     * @param id FT token ID
+     * @dev Reverts if caller is not in queue or not the seller.
+     */
     function stopExhibitFT(uint256 id) public onlyFT(id) {        
         uint256[] memory placeInQueue = _placeInQueue[id][msg.sender];
         uint256 tokenValueForTransfer;
@@ -225,18 +277,19 @@ contract Market is Initializable,  OwnableUpgradeable {
             require(tokenValueForTransfer != 0, "Value equal 0!"); 
             address tokenOwner = sellerInQueue[id][placeInQueue[i]];
             require(tokenOwner == msg.sender, "You are not an tokens owner!"); 
-            /* место в очереди как бы остается занятым, но value там уже не будет 
-            иначе убрать из мэппинга в этой очереди никак */
+            
             delete valueInQueue[id][placeInQueue[i]];
             delete sellerInQueue[id][placeInQueue[i]]; 
         }
 
-        /* выполняем перевод на адрес владельца токена */
         token.safeTransferFrom(address(this), msg.sender, id, tokenValueForTransfer, "");
 
     }
 
-    /* тут можно забрать только свой эфир, который получил от продажи FT или NFT */
+    /**
+     * @notice Withdraws all ETH earned from sales for the calling address.
+     * @dev Reverts if nothing is available for withdrawal.
+     */
     function withdrawETH() public {
         require(_toWithdraw[msg.sender] > 0, "You haven't value for withdraw!");
 
@@ -247,14 +300,23 @@ contract Market is Initializable,  OwnableUpgradeable {
         require(res, "Tx failed!");
     }
 
-    /* цену на Ft токены устанавливает владелец контракта */
+    /**
+     * @notice Sets the price per FT token. Only contract owner can call.
+     * @param id FT token ID
+     * @param price Price per token (in wei)
+     * @dev Reverts if price is invalid.
+     */
     function setPriceFT(uint256 id, uint256 price) public onlyOwner onlyFT(id) {
         require(price > 0, "Incorrect price!");
         _priceFT[id] = price;
     }
 
-    /* пока не установлена цена, продажа не осуществляется, то есть 
-    токен на уровне контракта невозможно купить тк стоят require */
+    /**
+     * @notice Sets prices for multiple exhibited NFTs. Only token owner can set price.
+     * @param ids Array of NFT IDs
+     * @param price Array of prices (in wei)
+     * @dev Reverts if caller is not the owner of NFT, or arrays mismatch.
+     */
     function setPriceNFTBatch(
         uint256[] calldata ids,
         uint256[] calldata price
@@ -265,15 +327,19 @@ contract Market is Initializable,  OwnableUpgradeable {
             require(price[i] > 0, "Incorrect price!");
             require(token.totalSupply(ids[i]) == 1, "Only NFT!");
             
-            /* только владелец токена может поставить цену */
             require(exhibitedNFTOwners[ids[i]] == msg.sender, "You aren't token owner or NFT isn't exhibited!");
         
             _priceNFT[ids[i]] = price[i];
         }}
     
 
-    /* будет выполняться, когда на адрес Market выполнят safeTransferFrom. Market получит
-    на баланс токены */
+    /**
+     * @notice Handles receipt of a single ERC1155 token type.
+     * @param from Address which sent the token
+     * @param id Token ID received
+     * @param value Amount received
+     * @dev If NFT, adds to exhibition; if FT, adds to queue and exhibition list.
+     */
     function onERC1155Received(
         address,
         address from,
@@ -289,10 +355,7 @@ contract Market is Initializable,  OwnableUpgradeable {
             _joinExhibitedNFT(from, id);
         }
         
-
         if (supply > 1) {
-            /* тут важен порядок исполнения этих функций, тк _joinQueue 
-            проверяет, что value > 1 */
             _joinQueue(from, id, value); 
             _joinExhibitedFT(id);
         }
@@ -300,7 +363,13 @@ contract Market is Initializable,  OwnableUpgradeable {
         return this.onERC1155Received.selector;
     }
 
-    /* отредактировать такж как в onERC1155Received */
+    /**
+     * @notice Handles receipt of multiple ERC1155 token types in batch.
+     * @param from Address which sent the tokens
+     * @param ids Token IDs received
+     * @param values Amounts received per token
+     * @dev For each: if NFT, adds to exhibition; if FT, adds to queue and exhibition list.
+     */
     function onERC1155BatchReceived(
         address,
         address from,
@@ -320,8 +389,6 @@ contract Market is Initializable,  OwnableUpgradeable {
             }
 
             if (supply > 1) {
-                /* тут важен порядок исполнения этих функций, тк _joinQueue 
-                проверяет, что value > 1 */
                 _joinQueue(from, ids[i], values[i]);
                 _joinExhibitedFT(ids[i]);
             }
@@ -331,22 +398,30 @@ contract Market is Initializable,  OwnableUpgradeable {
         return this.onERC1155BatchReceived.selector;
     }
 
+    /**
+     * @notice Adds a FT sale request to the end of the sale queue.
+     * @param from Seller address
+     * @param id FT token ID
+     * @param value Amount of tokens for sale
+     */
     function _joinQueue(address from, uint256 id, uint256 value) internal {
-        /* подумать какие проверки нужно провести, прежде чем выполнить 
-            запись в мэппинги */
-            /* тут мы добавили эту заявку на продажу FT в конец очереди */
-            require(value > 1, "Incorrect value");
-            uint256 tail = _queueTail[id];
-            require(tail < type(uint256).max, "Queue is overflow!");
-            valueInQueue[id][tail] = value;
-            sellerInQueue[id][tail] = from;
-            /* зафиксировали место в очереди для возможности удаления из
-            очереди и просмотра своего места в очереди */
-            _placeInQueue[id][from].push(tail);
+        require(value > 1, "Incorrect value");
+
+        uint256 tail = _queueTail[id];
+        require(tail < type(uint256).max, "Queue is overflow!");
+
+        valueInQueue[id][tail] = value;
+        sellerInQueue[id][tail] = from;
+
+        _placeInQueue[id][from].push(tail);
             
-            _queueTail[id]++;
+        _queueTail[id]++;
     }
 
+    /**
+     * @notice Adds FT ID to the exhibition list if not already present.
+     * @param id FT token ID
+     */
     function _joinExhibitedFT(uint256 id) internal {
         if(idsFTExhibited.length == 0) {
             idsFTExhibited.push(id);
@@ -364,13 +439,21 @@ contract Market is Initializable,  OwnableUpgradeable {
         
     }
 
+    /**
+     * @notice Adds NFT ID to the exhibition list and records owner.
+     * @param from Owner address
+     * @param id NFT ID
+     */
     function _joinExhibitedNFT(address from, uint256 id) internal {
         idsNFTExhibited.push(id);
-            /* записываем владельца, чтобы перевести ему средства после продажи или 
-            чтобы этот адрес мог вывести свой токен с продажи */
         exhibitedNFTOwners[id] = from; 
     }
 
+    /**
+     * @notice Removes NFT from exhibition list and clears its price.
+     * @param id NFT ID
+     * @return tokenOwner Address of the owner
+     */
     function _removeFromExhibit(uint256 id) internal returns(address) {
         address tokenOwner;
 
@@ -382,16 +465,21 @@ contract Market is Initializable,  OwnableUpgradeable {
                 exhibitedNFTOwners[id] = address(0);
             }
         }
-        /* также удаляем цену NFT из массива*/
         delete _priceNFT[id];
 
         return tokenOwner;
     }
 
+    /**
+     * @dev Rejects direct ETH transfers.
+     */
     receive() external payable {
         require(false, "I dont receive!");
     }
 
+     /**
+     * @dev Rejects calls to non-existent functions.
+     */
     fallback() external payable {
         require(false, "This function doesn't exists!");
     }

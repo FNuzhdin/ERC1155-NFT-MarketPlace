@@ -1,6 +1,5 @@
 import { ethers } from "hardhat";
 
-
 async function main() {
 console.log("mint...")
   const [signer] = await ethers.getSigners();

@@ -9,9 +9,14 @@ import "node_modules/@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pau
 import "node_modules/@openzeppelin/contracts/utils/Strings.sol";
 import "contracts/ITokensERC1155.sol";
 
-/* Best practice - это наследование от контрактов, а не от 
-интерфейсов */ /* в консп */
-
+/**
+ * @title TokensERC1155
+ * @notice Custom ERC1155 smart-contract for minting fungible and non-fungible tokens (NFTs & FTs),
+ * supporting collections, pausing, burning, and supply tracking.
+ * @dev Compatible with OpenZeppelin Contracts ^5.0.0. Owner-only minting. 
+ * Batch and single minting supported. 
+ * Enforces URI management, collection minting limits, and batch withdrawal for owner.
+ */
 contract TokensERC1155 is
     ITokensERC1155,
     ERC1155,
@@ -21,7 +26,10 @@ contract TokensERC1155 is
 {
     using Strings for uint256;
 
+    /// @notice The owner of the contract, allowed to mint or pause/unpause.
     address public immutable owner;
+
+    /// @notice The current token ID to be assigned to the next minted token.
     uint256 private _currentTokenId = 0;
     mapping(uint256 tokenId => string) private _tokenURIs;
 
@@ -29,13 +37,16 @@ contract TokensERC1155 is
         owner = msg.sender;
     }
 
-    /* подумать, что еще тут может потребоваться */
-
     modifier onlyOwner() {
         require(msg.sender == owner, "Not an owner!");
         _;
     }
 
+    /**
+     * @notice Ensures the URI is not empty and collection minting does not exceed max supply.
+     * @param tokenURI The metadata URI for the token or collection
+     * @param collectionLength Number of tokens to mint in batch (should not overflow)
+     */
     modifier reqSupplyURI(string memory tokenURI, uint256 collectionLength) {
         require(bytes(tokenURI).length > 0, "Empty URI!");
         require(
@@ -57,8 +68,12 @@ contract TokensERC1155 is
         _unpause();
     }
 
-    /** @dev
-     * This function for mint new FT
+    /**
+     * @notice Mints a new fungible token (FT).
+     * @dev Only owner can mint. Value must be greater than 1.
+     * @param to Recipient address
+     * @param tokenURI Metadata URI for the FT
+     * @param value Amount of tokens to mint (must be > 1)
      */
     function mintNewFT(
         address to,
@@ -72,8 +87,12 @@ contract TokensERC1155 is
         _currentTokenId++;
     }
 
-    /** @dev
-     * This function for mint FT that minted before
+    /**
+     * @notice Mints additional amount for an existing FT (token ID).
+     * @dev Only owner can mint. Value must be greater than 1.
+     * @param to Recipient address
+     * @param id Token ID to mint
+     * @param value Amount of tokens to mint (must be > 1)
      */
     function mintFT(address to, uint256 id, uint256 value) external onlyOwner {
         require(value > 1, "Amount must be more then 1!");
@@ -81,11 +100,15 @@ contract TokensERC1155 is
         _mint(to, id, value, "");
     }
 
-    /* будте подходить только для случаев, если мы всю коллекцию
-    минтим на один адрес */
-    /** @dev
-     * This function for mint NFT collection
-     * We don't recommend mint tokens on Market address
+    /**
+     * @notice Mints a collection of NFTs (each with unique token ID & shared URI).
+     * @dev Only owner can mint. Collection size limited to 2-50 for gas reasons.
+     * Each NFT in collection has unique tokenId, value and same URI.
+     * Not recommended to mint to Market contract address.
+     * @param to Recipient address
+     * @param tokenURI Metadata URI for the collection
+     * @param collectionLength Number of NFTs to mint (2-50)
+     * @param values Amount per NFT (should be 1 per NFT)
      */
     function mintNFT(
         address to,
@@ -97,16 +120,9 @@ contract TokensERC1155 is
             collectionLength > 1 && collectionLength <= 50,
             "The collection must be 2 to 50 NFT!"
         );
-        /* сделаем ограничение на батч, тк слишком большой батч
-        может упереться в лимиты по газу */ /* в консп */
-        /* также в README нужно упомянуть, что существует ограничение 
-        на батч из-за возможности превысить газ */
         require(values.length == collectionLength, "Incorrect length!");
 
         uint256[] memory ids = new uint256[](collectionLength);
-        /* возможно где-то в README упомянуть, что этот контракт 
-        предназначен только для создания коллекции, в которой 
-        по одному экзепляру каждого NFT */
         for (uint256 i = 0; i < collectionLength; i++) {
             ids[i] = _currentTokenId;
             _currentTokenId++;
@@ -119,24 +135,25 @@ contract TokensERC1155 is
             ids,
             values,
             ""
-        ); /* в консп */ /* мы можем отправить 
-        пустую строку, если функция ожидает bytes, она автоматом 
-        конвертируется в 0x */ /* а также любой string можно передать 
-        в bytes, но не наоборот */
+        );
     }
 
-    /* вывод только для токенов */
-    /* вывод одного токена (NFT или FT) */
+    /**
+     * @notice Withdraws all tokens of a given ID (NFT or FT) from the contract to the owner.
+     * @param id Token ID to withdraw
+     */
     function withdrawSingle(uint256 id) public onlyOwner {
         uint256 currentBalance = balanceOf(address(this), id);
 
         _safeTransferFrom(address(this), owner, id, currentBalance, "");
     }
 
-    /* массив с accounts - это массив наполненный одним адресом данного контракта. 
-    создается во фронтенде */
-    /* вывод любых токенов (FT или NFT) в формате Batch. Исключительно на адрес
-    owner этого контракта */
+    /**
+     * @notice Batch withdraw of any tokens (NFT or FT) to the owner.
+     * @dev Accounts array should be filled with this contract's address.
+     * @param ids Token IDs to withdraw
+     * @param accounts Array of sender addresses (must match ids length, usually contract address)
+     */
     function withdrawBatch(
         uint256[] memory ids,
         address[] memory accounts
@@ -149,15 +166,18 @@ contract TokensERC1155 is
         _safeBatchTransferFrom(address(this), owner, ids, currentBalances, "");
     }
 
+    /**
+     * @notice Rejects direct receipt of ETH.
+     */
     receive() external payable {
         require(false, "I dont receive ETH!");
     }
 
-    /* ERC1155 не имеет встроенного метода для проверки наличия токенов на адресе 
-    (речь о тех случаях, когда мы не знаем id токенов */
-    /* можно простоить этот метод во фронтенде, используя balanceOfBatch из контракта
+    /**
+     * @notice Handles ERC1155 single token receipt. Only accepts tokens minted by this contract.
+     * @param id Token ID received
+     * @return ERC1155 selector for safe transfer
      */
-
     function onERC1155Received(
         address,
         address,
@@ -169,6 +189,11 @@ contract TokensERC1155 is
         return this.onERC1155Received.selector;
     }
 
+    /**
+     * @notice Handles ERC1155 batch token receipt. Only accepts tokens minted by this contract.
+     * @param ids Array of token IDs received
+     * @return ERC1155 selector for safe batch transfer
+     */
     function onERC1155BatchReceived(
         address,
         address,
@@ -185,14 +210,22 @@ contract TokensERC1155 is
         return this.onERC1155BatchReceived.selector;
     }
 
-    /* Можно указать это в README, что данный ERC1155 не принимает 
-    сторонних токенов ERC1155 */
-
+    /**
+     * @notice Sets the URI for a specific token ID.
+     * @param tokenId Token ID
+     * @param tokenURI Metadata URI
+     * @dev Emits a URI event as per ERC1155 spec.
+     */
     function _setURI(uint256 tokenId, string memory tokenURI) internal {
         _tokenURIs[tokenId] = tokenURI;
         emit URI(uri(tokenId), tokenId);
     }
 
+    /**
+     * @notice Checks if an interface is supported.
+     * @param interfaceId Interface identifier
+     * @return True if supported, false otherwise
+     */
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC1155, IERC165) returns (bool) {
@@ -201,9 +234,12 @@ contract TokensERC1155 is
             super.supportsInterface(interfaceId);
     }
 
-    /* Можно указать это в README, что данный ERC1155 не принимает 
-    сторонних токенов ERC1155 */
-
+    /**
+     * @notice Returns the URI for a given token ID.
+     * @param tokenId Token ID
+     * @return The metadata URI
+     * @dev For NFTs, returns URI with suffix 'metadata_{tokenId}.json'
+     */
     function uri(uint256 tokenId) public view override(ERC1155, ITokensERC1155) returns (string memory) {
         string memory tokenURI = _tokenURIs[tokenId];
 
@@ -218,10 +254,12 @@ contract TokensERC1155 is
                     ? string.concat(tokenURI, "metadata_", tokenId.toString(), ".json")
                     : "";
             }
-    } /* обязательно переопределяем для ERC1155URIStorage для корректной работы URIStorage */ /* если мы 
-    не используем ERC1155URIStorage, то нам не требуется делать переопредление с 
-    override(ERC1155, ERC1155URIStorage)*/ /* в консп */
+    }
 
+    /**
+     * @notice Ensures proper update logic for pausable and supply extensions.
+     * @dev Internal override required by OpenZeppelin for ERC1155Pausable and ERC1155Supply.
+     */
     function _update(
         address from,
         address to,
@@ -229,5 +267,5 @@ contract TokensERC1155 is
         uint256[] memory values
     ) internal override(ERC1155, ERC1155Pausable, ERC1155Supply) {
         super._update(from, to, ids, values);
-    } /* обязательно переопределяем для корректной работы */ /* в консп */
+    } 
 }
