@@ -1,12 +1,47 @@
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 import SimpleError from "@/components/Errors/SimpleError";
 import { readMarket } from "@/hooks/MarketContract";
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
+import { onlyNumbers } from "@/utils/FormatChecks";
 
 type PlaceInQueueProps = {
   address: `0x${string}` | undefined;
 };
+
+/**
+ * PlaceInQueue component
+ *
+ * A component for viewing all queue positions for the current user (address) in the market contract for a given FT id.
+ * Intended for sellers who want to track their spots in the queue.
+ *
+ * Features:
+ * - Allows the user to input a token (FT) id.
+ * - Validates that the id is numeric.
+ * - Fetches all queue positions for the provided account and id using the market contract.
+ * - Computes each position relative to the current queue head.
+ * - Displays the user's positions in the queue as a list.
+ * - Handles loading and error states, and disables the button while loading.
+ *
+ * UI:
+ * - Uses SimpleInput for the id field.
+ * - Uses SimpleButton for the "get" action.
+ * - Uses SimpleError to display error messages.
+ *
+ * Props:
+ * - `address` (`0x...` or undefined): The connected wallet address.
+ *
+ * Usage:
+ * ```tsx
+ * <PlaceInQueue address={address} />
+ * ```
+ *
+ * Note:
+ * - Only numeric token ids are allowed.
+ * - The user must be connected (provide a valid address).
+ * - Useful for sellers to monitor all their positions in the FT queue.
+ * - Only owner can use this component.
+ */
 
 const PlaceInQueue: React.FC<PlaceInQueueProps> = ({ address }) => {
   const [error, setError] = useState<string | undefined>(undefined);
@@ -19,11 +54,7 @@ const PlaceInQueue: React.FC<PlaceInQueueProps> = ({ address }) => {
   }
   
   const _handleClick = async () => {
-    const onlyNubmersId = /^\d+$/.test(id);
-    if(!onlyNubmersId) {
-      setError("Only numbers");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setError(undefined);
     setLoad(true);

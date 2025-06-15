@@ -1,5 +1,32 @@
-import { error } from "console";
 import { NextRequest, NextResponse } from "next/server";
+
+/**
+ * POST /api/fetch-ipfs-metadata
+ *
+ * Fetches metadata from IPFS using the provided CID.
+ *
+ * Expects:
+ * ```json
+ * { "cid": "Qm..." }
+ * ```
+ *
+ * Returns IPFS JSON metadata or an error.
+ *
+ * Example successful IPFS response:
+ * ```json
+ * {
+ *   "name": "tokenName",
+ *   "description": "tokenDescription",
+ *   "image": "CID/image_1.png"
+ * }
+ * ```
+ *
+ * Errors:
+ * - 400: Missing or invalid CID
+ * - 500: Server misconfiguration or fetch error
+ *
+ * Requires env: PINATA_JWT
+ */
 
 export async function POST(req: NextRequest, res: NextResponse) {
 
@@ -42,7 +69,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     return NextResponse.json(data, { status:  200});
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.massage || "Unknown error"}, 
+      { error: error.message || "Unknown error"}, 
       { status: 500}
     );
   }

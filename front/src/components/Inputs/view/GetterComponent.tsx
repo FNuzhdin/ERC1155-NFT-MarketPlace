@@ -3,13 +3,46 @@ import { readMarket } from "@/hooks/MarketContract";
 import { useMarketRead } from "@/hooks/MarketContract";
 
 import SimpleError from "@/components/Errors/SimpleError";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 
 import SellerInQueue from "./SellerInQueue";
 import ValueInQueue from "./ValueInQueue";
 
-import { IoIosRefresh } from "react-icons/io";
 import SimpleInput from "../SimpleInput";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * GetterComponent
+ *
+ * A dashboard component for viewing market contract queue information and implementation version.
+ * Intended for use in the view section of the app. Only onwer/admin can use this component. 
+ *
+ * Features:
+ * - Displays the current implementation version of the market contract.
+ * - Allows users to input a token or market id and fetch queue head and tail positions.
+ * - Validates that the entered id is numeric.
+ * - Shows queue information (head and tail) for the specified id.
+ * - Includes ValueInQueue and SellerInQueue subcomponents for additional queue-related details.
+ * - Handles and displays errors using the SimpleError component.
+ * - Disables input and button during loading.
+ *
+ * UI:
+ * - Uses SimpleInput for id field.
+ * - Uses SimpleButton for the "get" action.
+ * - Uses SimpleError to display error messages.
+ * - Renders ValueInQueue and SellerInQueue below the main info row.
+ *
+ * Usage:
+ * ```tsx
+ * <GetterComponent />
+ * ```
+ *
+ * Note:
+ * - Only numeric ids are allowed.
+ * - Fetches and displays version, queue head, and queue tail.
+ * - Suitable for any user who needs to inspect queue state in the market contract.
+ * - Only owner can use this component. 
+ */
 
 const GetterComponent: React.FC = () => {
   const [error, setError] = useState<string | undefined>(undefined);
@@ -40,12 +73,7 @@ const GetterComponent: React.FC = () => {
   }
 
   const _handleClick = async() => {
-    const onlyNubmersId = /^\d+$/.test(id);
-
-    if(!onlyNubmersId) {
-      setError("Only numbers");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setLoad(true);
     setError(undefined);

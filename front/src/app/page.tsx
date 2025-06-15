@@ -16,16 +16,22 @@ export const wagmiConfig = createConfig({
   },
 });
 
-// создаем QueryClient для работы с @tanstack/react-query (обязательно для WagmiProvider)
 const queryClient = new QueryClient();
 
-/* прописать потом в README, что мы используем wagmi, 
-также используем кастомные хуки, также испльзуем самописную 
-утилиту для загрузки изображений в ipfs */
+/**
+ * Home component (entry point).
+ *
+ * - Sets up WAGMI provider for Ethereum wallet connection and React Query for data caching.
+ * - Chains: Hardhat (with custom id: 1337) and Sepolia.
+ * - Changes Hardhat chain id to 1337 for local development compatibility.
+ * - Wraps the main App component with WagmiProvider and QueryClientProvider.
+ *
+ * Usage:
+ *   - Place this as the main page (e.g., in `app/page.tsx`).
+ *   - All wallet and data-fetching context is provided to child components.
+ */
 
 export default function Home() {
-  
-
   return (
     <div>
       <WagmiProvider config={wagmiConfig}>

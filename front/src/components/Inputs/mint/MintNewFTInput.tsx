@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { MintInputProps } from "./MainMInt";
-import ImagePreview from "@/components/cards/ImagePreview";
+import ImagePreview from "@/components/Cards/ImagePreview";
 import SimpleError from "@/components/Errors/SimpleError";
 import { readToken, writeToken } from "@/hooks/TokenContract";
 import { ethers } from "ethers";
+import { onlyNumbers } from "@/utils/FormatChecks";
 
 type TokenData = {
   file: File | undefined;
@@ -12,6 +13,45 @@ type TokenData = {
   symbol: string;
   value: string;
 };
+
+/**
+ * MintNewFTInput component
+ *
+ * A form component for minting a new Fungible Token (FT) with image and metadata.
+ * Used by the contract owner in the minting section.
+ *
+ * Features:
+ * - Lets the owner upload an image and provide metadata (name, description, symbol, value).
+ * - Validates input fields for length, required presence, and correct formatting.
+ * - Checks if the user is the contract owner and if the supply limit is not exceeded.
+ * - Uploads image and metadata to IPFS via an API endpoint.
+ * - On successful upload, mints a new FT by calling the smart contract.
+ * - Handles minting state and disables form inputs during processing.
+ * - Shows error messages using the SimpleError component.
+ * - Allows cleaning/resetting the form.
+ *
+ * Props (MintInputProps):
+ * - `address` (`0x...` or undefined): Connected wallet address.
+ * - `mintStarted` (boolean): Is minting in progress.
+ * - `setMintStarted`: Setter for minting state.
+ * - `currentId` (bigint | undefined): Current token id.
+ * - `refetchCurrentId`: Function to refetch the current token id.
+ *
+ * Usage:
+ * ```tsx
+ * <MintNewFTInput
+ *   address={address}
+ *   mintStarted={mintStarted}
+ *   setMintStarted={setMintStarted}
+ *   currentId={currentId}
+ *   refetchCurrentId={refetchCurrentId}
+ * />
+ * ```
+ *
+ * Note:
+ * - Only the contract owner should use this component.
+ * - Used inside the main mint component to create new FTs with custom metadata and image.
+ */
 
 const MintNewFTInput: React.FC<MintInputProps> = ({
   address,
@@ -65,10 +105,7 @@ const MintNewFTInput: React.FC<MintInputProps> = ({
   const _handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    /**
-     * @description
-     * We are execution cheks before upload in ipfs
-     */
+    //We are execution cheks before upload in ipfs
     if (
       !(
         tokenData.file ||
@@ -98,11 +135,7 @@ const MintNewFTInput: React.FC<MintInputProps> = ({
       return;
     }
 
-    const onlyNumbers = /^\d+$/.test(tokenData.value);
-    if (!onlyNumbers) {
-      setError("Only numbers in value!");
-      return;
-    }
+    if(!onlyNumbers({param: tokenData.value, setError})) return;
 
     if (tokenData.description.length > 20) {
       setError("Description must be shorter");
@@ -124,9 +157,7 @@ const MintNewFTInput: React.FC<MintInputProps> = ({
       return;
     }
 
-    /**
-     * @description Creation formData
-     */
+    // Creation formData
     const formData = new FormData();
     if (tokenData.file) {
       formData.append("file", tokenData.file);
@@ -138,10 +169,7 @@ const MintNewFTInput: React.FC<MintInputProps> = ({
 
     setMintStarted(true);
     try {
-      /**
-       * @description
-       * At this step we are upload image and metadata in ipfs
-       */
+      // At this step we are upload image and metadata in ipfs
       const result = await fetch("/api/upload-metadata-FT", {
         method: "POST",
         body: formData,
@@ -163,10 +191,7 @@ const MintNewFTInput: React.FC<MintInputProps> = ({
       console.log("POST data:", data);
       console.log("Upload in ipfs finised!");
 
-      /** 
-       * @description
-       * At this step we are minting tokens in contract
-       */
+      // At this step we are minting tokens in contract
       console.log("MintNewFT started");
       console.log([address, data.metadataUri, BigInt(tokenData.value)]);
       const hash = await writeToken("mintNewFT", [

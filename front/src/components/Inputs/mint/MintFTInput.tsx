@@ -2,13 +2,44 @@ import React, { useState } from "react";
 import SimpleError from "@/components/Errors/SimpleError";
 import { readToken, writeToken } from "@/hooks/TokenContract";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
+import { onlyNumbers } from "@/utils/FormatChecks";
 
 type MintFTInputProps = {
   address: `0x${string}` | undefined;
   mintStarted: boolean;
   setMintStarted: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+/**
+ * MintFTInput component
+ *
+ * A form component for minting additional supply of an existing fungible token (FT).
+ * Used within the minting section by the contract owner/admin.
+ *
+ * Features:
+ * - Allows the owner to specify a token ID and the amount to mint.
+ * - Validates input to ensure only numbers are accepted.
+ * - Checks if the token exists and verifies that the user is the contract owner.
+ * - Prevents minting if the amount is less than 2.
+ * - Handles minting state, disables input and button during processing.
+ * - Displays error messages via the SimpleError component.
+ * - Uses SimpleInput and SimpleButton for uniform UI.
+ *
+ * Props:
+ * - `address`: (`0x...` or undefined) — the connected wallet address.
+ * - `mintStarted`: (boolean) — indicates if a minting process is in progress.
+ * - `setMintStarted`: (Dispatch) — setter to update minting state.
+ *
+ * Usage:
+ * ```tsx
+ * <MintFTInput address={address} mintStarted={mintStarted} setMintStarted={setMintStarted} />
+ * ```
+ *
+ * Note:
+ * - This component should only be accessible to the contract owner.
+ * - Used inside the main mint component to add supply to an existing FT.
+ */
 
 const MintFTInput: React.FC<MintFTInputProps> = ({
   address,
@@ -30,17 +61,8 @@ const MintFTInput: React.FC<MintFTInputProps> = ({
   };
 
   const _handleClick = async () => {
-    const onlyNumbersValue = /^\d+$/.test(data.value);
-    if (!onlyNumbersValue) {
-      setError("Only numbers in value, pls!");
-      return;
-    }
-
-    const onlyNumbersId = /^\d+$/.test(data.value);
-    if (!onlyNumbersId) {
-      setError("Only numbers in id, pls!");
-      return;
-    }
+    if(!onlyNumbers({param: data.value, setError})) return;
+    if(!onlyNumbers({param: data.id, setError})) return;
 
     const result = await readToken("exists", [data.id]);
     if (result !== true) {

@@ -1,8 +1,45 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
 import SimpleError from "@/components/Errors/SimpleError";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 import { writeMarket } from "@/hooks/MarketContract";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * StopExhibitFT component
+ *
+ * This component allows any user to remove (stop exhibiting) all their FT (fungible token) tokens with a given id from the marketplace.
+ * Useful for cases where a user wants to cancel the sale and retrieve all tokens of a specific FT id that were previously exhibited for sale.
+ *
+ * Features:
+ * - **Stop FT Exhibit:**  
+ *   User enters an FT token id to stop exhibiting all tokens of that id from the marketplace.
+ *   Calls the `stopExhibitFT` method on the market contract.
+ *
+ * - **Validation:**  
+ *   Ensures the entered id is numeric.
+ *
+ * - **User Feedback:**  
+ *   Shows loading state during the transaction.
+ *   Displays the transaction hash on success.
+ *   Shows clear error messages for invalid input or transaction errors.
+ *
+ * UI:
+ * - Uses `SimpleInput` for the FT id.
+ * - Uses `SimpleButton` to initiate the stop exhibit action.
+ * - Uses `SimpleError` to display error messages.
+ *
+ * Usage:
+ * ```tsx
+ * <StopExhibitFT />
+ * ```
+ *
+ * Notes:
+ * - Any user can use this component to stop exhibiting their own FTs for sale on the marketplace.
+ * - Only the user's own exhibited tokens will be affected.
+ * - The input is cleared after each attempt.
+ * - After a successful call, the transaction hash is partially displayed.
+ */
 
 const StopExhibitFT: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false);
@@ -15,11 +52,7 @@ const StopExhibitFT: React.FC = () => {
   };
 
   const _handleClick = async() => {
-    const onlyNumbers = /^\d+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers in id");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setError(undefined);
     setLoad(true);

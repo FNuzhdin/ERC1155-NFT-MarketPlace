@@ -12,7 +12,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ image, index }) => {
         <img
           key={index}
           src={URL.createObjectURL(image)}
-          /* консп */
           alt={`preview ${index}`}
           width={50}
         />

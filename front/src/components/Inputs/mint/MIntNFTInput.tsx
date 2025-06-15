@@ -1,13 +1,59 @@
 import React, { useState } from "react";
-
-import type { ImageItem } from "./MainMInt";
 import type { MintInputProps } from "./MainMInt";
 
 import { readToken, writeToken } from "@/hooks/TokenContract";
 import { ethers } from "ethers";
 
-import ImagePreview from "@/components/cards/ImagePreview";
+import ImagePreview from "@/components/Cards/ImagePreview";
 import SimpleError from "@/components/Errors/SimpleError";
+
+type ImageItem = {
+  file: File;
+  name: string;
+  description: string;
+};
+
+/**
+ * MintNFTInput component
+ *
+ * A form component for minting a collection of new NFTs (Non-Fungible Tokens) by uploading multiple images and metadata.
+ * Intended for use by the contract owner in the mint section.
+ *
+ * Features:
+ * - Allows uploading multiple images (2–50) for batch NFT minting.
+ * - For each image, user can specify a name and description.
+ * - Validates:
+ *   - 2 to 50 images must be uploaded.
+ *   - Only the contract owner can mint.
+ *   - The token supply does not exceed the contract's max limit.
+ * - Uploads images and metadata to IPFS via an API endpoint.
+ * - On success, calls the smart contract to mint each NFT.
+ * - Handles and displays errors using the SimpleError component.
+ * - Allows removal of individual images or clearing the entire selection.
+ * - Disables form controls during minting.
+ *
+ * Props (MintInputProps):
+ * - `address`: (string | undefined) — Current wallet address.
+ * - `mintStarted`: (boolean) — Minting state indicator.
+ * - `setMintStarted`: Setter for minting state.
+ * - `currentId`: (bigint | undefined) — Current token id.
+ * - `refetchCurrentId`: Function to refetch the current token id.
+ *
+ * Usage:
+ * ```tsx
+ * <MintNFTInput
+ *   address={address}
+ *   mintStarted={mintStarted}
+ *   setMintStarted={setMintStarted}
+ *   currentId={currentId}
+ *   refetchCurrentId={refetchCurrentId}
+ * />
+ * ```
+ *
+ * Note:
+ * - Only the contract owner should use this component.
+ * - Used inside the main mint component to create NFT collections in batch.
+ */
 
 const MintNFTInput: React.FC<MintInputProps> = ({
   address,
@@ -31,8 +77,7 @@ const MintNFTInput: React.FC<MintInputProps> = ({
 
   const _handleChangeData = (
     index: number,
-    field: "name" | "description" /* консп делаем "объединенный тип" 
-    который говорит, что field может быть строго такими строками */,
+    field: "name" | "description",
     value: string
   ) => {
     setImages((prev) =>
@@ -49,16 +94,11 @@ const MintNFTInput: React.FC<MintInputProps> = ({
   };
 
   const _handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement> /* это
-      generic, в нем можно указывать тип DOM-элемента, на котором 
-      возникаепт событие (input, form, button, select) */
+    e: React.FormEvent<HTMLFormElement> 
   ) => {
     e.preventDefault();
 
-    /**
-     * @description
-     * We are execution cheks before upload in ipfs
-     */
+    //We are execution cheks before upload in ipfs
     if (!(images.length > 1 && images.length <= 50)) {
       setError("Collection must be 2 to 50 NFT!");
       return;
@@ -82,9 +122,7 @@ const MintNFTInput: React.FC<MintInputProps> = ({
       return;
     }
 
-    /**
-     * @description Creation formData
-     */
+    // Creation formData
     const formData = new FormData();
     images.forEach(({ file }) => {
       formData.append("file", file);
@@ -104,10 +142,7 @@ const MintNFTInput: React.FC<MintInputProps> = ({
 
     setMintStarted(true);
     try {
-      /**
-       * @description
-       * At this step we are upload image and metadata in ipfs
-       */
+      // At this step we are upload image and metadata in ipfs
       const result = await fetch("/api/upload-metadata-NFT", {
         method: "POST",
         body: formData,
@@ -130,10 +165,7 @@ const MintNFTInput: React.FC<MintInputProps> = ({
       console.log("POST data:", data);
       console.log("Upload in ipfs finised!");
 
-      /** 
-       * @description
-       * At this step we are minting tokens in contract
-       */
+      // At this step we are minting tokens in contract
       console.log("MintNFT started");
       const singleValue = Array.from({ length: data.length }, () => BigInt(1));
       const hash = await writeToken("mintNFT", [

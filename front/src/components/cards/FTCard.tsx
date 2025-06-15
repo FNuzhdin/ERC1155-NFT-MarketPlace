@@ -2,7 +2,7 @@ import { useTokenRead, writeToken } from "@/hooks/TokenContract";
 import { useMarketRead, writeMarket } from "@/hooks/MarketContract";
 
 import React, { useEffect, useState } from "react";
-import SimpleButton from "../buttons/SimpleButton";
+import SimpleButton from "../Buttons/SimpleButton";
 import { IoIosRefresh } from "react-icons/io";
 import SimpleInput from "../Inputs/SimpleInput";
 
@@ -11,6 +11,7 @@ import SimpleError from "../Errors/SimpleError";
 
 import question from "../../images/question.png";
 import Image from "next/image";
+import { onlyNumbers } from "@/utils/FormatChecks";
 
 type FTCardProps = {
   id: bigint;
@@ -24,6 +25,29 @@ type Metadata = {
   decimals: number;
   symbol: string;
 };
+
+/**
+ * FTCard component
+ *
+ * Displays and allows trading of a fungible token (FT) in the marketplace.
+ *
+ * State variables:
+ * - `metadataUri`: Holds the token's metadata URI (usually IPFS CID).
+ * - `metadata`: Parsed metadata object (name, description, image, symbol, decimals).
+ * - `error`: String for error messages, displayed to the user.
+ * - `price`: Current token price in wei, fetched from the market contract.
+ * - `balance`: Token balance available in the market contract for this token.
+ * - `value`: User input for buy/sell amount.
+ * - `load`: Whether a buy/sell transaction is currently in progress.
+ *
+ * Loads on-chain data via contract hooks.
+ * Handles buy/sell actions with validation and error handling.
+ * Uses custom UI components for input, error display, and buttons.
+ *
+ * Props:
+ * - `id`: Token ID (bigint)
+ * - `address`: User wallet address
+ */
 
 const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
   const { data: uri, isLoading: loadingUri } = useTokenRead("uri", [id]);
@@ -72,6 +96,12 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
     }
   }, [uri, loadingUri]);
 
+
+  /**
+   * Loads and validates token metadata from IPFS whenever metadataUri changes.
+   * Sends a POST request to /api/get-ipfs-metadata.
+   * Sets metadata if valid, else sets error.
+   */
   useEffect(() => {
     (async () => {
       if (metadataUri) {
@@ -108,11 +138,7 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
   };
 
   const _handleClickBuy = async () => {
-    const onlyNumbers = /^\d+$/.test(value);
-    if (!onlyNumbers) {
-      setError("Only numbers");
-      return;
-    }
+    if(!onlyNumbers({param: value, setError})) return;
 
     if (Number(value) === 0) {
       setError("Zero value prohibited");
@@ -143,11 +169,7 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
   };
 
   const _handleClickSell = async () => {
-    const onlyNumbers = /^\d+$/.test(value);
-    if (!onlyNumbers) {
-      setError("Only numbers");
-      return;
-    }
+    if(!onlyNumbers({param: value, setError})) return;
 
     if (Number(value) === 0) {
       setError("Zero value prohibited");
@@ -243,6 +265,14 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
   );
 };
 
+/**
+ * Type guard for the Metadata type.
+ * Checks if the input object conforms to the expected Metadata structure:
+ * - Must be a non-null object.
+ * - Must have string properties: name, description, image, symbol.
+ * - Must have a numeric property: decimals.
+ * Used to validate server responses for token metadata.
+ */
 export function isMetadata(obj: any): obj is Metadata {
   return (
     typeof obj === "object" &&

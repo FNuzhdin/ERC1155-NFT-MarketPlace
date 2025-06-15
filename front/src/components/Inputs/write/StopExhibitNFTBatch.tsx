@@ -1,8 +1,35 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
 import SimpleError from "@/components/Errors/SimpleError";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 import { writeMarket } from "@/hooks/MarketContract";
+import { onlyNumbersComma } from "@/utils/FormatChecks";
+
+/**
+ * StopExhibitNFTBatch component
+ *
+ * Allows a user to remove (stop exhibiting) multiple NFTs (by comma-separated ids) from the marketplace at once.
+ *
+ * Key points:
+ * - Enter comma-separated NFT ids (numbers only) to stop exhibiting those NFTs.
+ * - Calls the `stopExhibitNFTBatch` method on the marketplace contract.
+ * - Shows loading status and transaction hash on success.
+ * - Displays error messages for invalid input or transaction errors.
+ *
+ * UI:
+ * - `SimpleInput` for ids.
+ * - `SimpleButton` to confirm.
+ * - `SimpleError` for error display.
+ *
+ * Usage:
+ * ```tsx
+ * <StopExhibitNFTBatch />
+ * ```
+ *
+ * Notes:
+ * - Any user can use for their own NFTs.
+ * - After success, input is cleared and tx hash is shown partially.
+ */
 
 const StopExhibitNFTBatch: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false);
@@ -15,11 +42,7 @@ const StopExhibitNFTBatch: React.FC = () => {
   };
 
   const _handleClick = async () => {
-    const format = /^[\d\s,]+$/.test(ids);
-    if (!format) {
-      setError("Only numbers, comma and space in id");
-      return;
-    }
+    if(!onlyNumbersComma({param: ids, setError})) return;
 
     setError(undefined);
     setLoad(true);

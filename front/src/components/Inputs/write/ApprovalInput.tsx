@@ -1,8 +1,51 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import { readToken, writeToken } from "@/hooks/TokenContract";
+
+/**
+ * ApprovalInput component
+ *
+ * A component for managing and viewing operator approvals for tokens.
+ * This component allows users to both grant/revoke approval for an operator
+ * (using `setApprovalForAll`) and check the current approval status for any operator
+ * (using `isApprovedForAll`). Suitable for both regular users and contract owners.
+ *
+ * Features:
+ * - **Check Approve:**  
+ *   Enter an operator address to check if they are currently approved to manage all tokens for the connected user.
+ *   Displays the approval status as a boolean result.
+ *
+ * - **Set Approval For All:**  
+ *   Enter an operator address and a boolean value (`true` or `false`) to grant or revoke approval for that operator.
+ *   Initiates a blockchain transaction to update the approval status.
+ *
+ * - **Validation:**  
+ *   Ensures that all entered addresses are valid addresses (`0x...` and 42 characters long).
+ *   Ensures that boolean input is either `true` or `false`.
+ *
+ * - **Error Handling & Feedback:**  
+ *   Immediate feedback for input errors and transaction failures.
+ *   Disables inputs and buttons while loading.
+ *
+ * UI:
+ * - Uses `SimpleInput` for operator address and boolean value.
+ * - Uses `SimpleButton` for actions.
+ * - Uses `SimpleError` to display error messages.
+ *
+ * Props:
+ * - `address` (`0x...` or undefined): The connected wallet address (required for checking approvals).
+ *
+ * Usage:
+ * ```tsx
+ * <ApprovalInput address={address} />
+ * ```
+ *
+ * Note:
+ * - Both regular users and admins can use this component to manage and inspect operator approvals.
+ * - The component features both approval management and approval status checking in the same interface.
+ */
 
 const ApprovalInput: React.FC<{ address: `0x${string}` | undefined }> = ({
   address,

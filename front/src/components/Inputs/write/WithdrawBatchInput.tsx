@@ -1,9 +1,37 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import { writeToken } from "@/hooks/TokenContract";
 import { TOKEN_ADDR } from "@/utils/ProvenAddresses";
+import { onlyNumbersComma } from "@/utils/FormatChecks";
+
+/**
+ * WithdrawBatchInput component
+ *
+ * Allows the contract owner to withdraw multiple tokens (by comma-separated ids) from the TokenERC1155 contract if they were accidentally sent there.
+ *
+ * Key points:
+ * - Only the owner can use this component.
+ * - Enter comma-separated token ids (numbers only) to withdraw these tokens from the contract.
+ * - Calls `withdrawBatch` on the TokenERC1155 contract.
+ * - Shows loading state and displays error messages if input is invalid or transaction fails.
+ *
+ * UI:
+ * - `SimpleInput` for token ids.
+ * - `SimpleButton` to confirm withdrawal.
+ * - `SimpleError` to display errors.
+ *
+ * Usage:
+ * ```tsx
+ * <WithdrawBatchInput />
+ * ```
+ *
+ * Notes:
+ * - For owner use only.
+ * - Use to recover tokens that ended up in the TokenERC1155 contract by mistake.
+ * - Fields clear after operation.
+ */
 
 const WithdrawBatchInput: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -17,11 +45,7 @@ const WithdrawBatchInput: React.FC = () => {
   };
 
   const _handleClick = async () => {
-    let onlyNumbers = /^[\d\s,]+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers, comma, space, please!");
-      return;
-    }
+    if(!onlyNumbersComma({param: id, setError})) return;
 
     setLoad(true);
     setError(undefined);

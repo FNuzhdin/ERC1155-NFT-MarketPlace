@@ -1,8 +1,37 @@
 import React, { ReactElement, ReactEventHandler, useState } from "react";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import { readToken } from "@/hooks/TokenContract";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * ExistsInput component
+ *
+ * A form component for checking if a token with a specific ID exists in the contract.
+ * Suitable for use by any user wanting to verify token existence.
+ *
+ * Features:
+ * - Allows the user to enter a token ID.
+ * - Validates that the token ID is a number.
+ * - Calls the `exists` method of the smart contract to check existence.
+ * - Displays 'true' or 'false' as result, or an error message if something goes wrong.
+ * - Disables input and button during loading.
+ *
+ * UI:
+ * - Uses SimpleInput for the token ID field.
+ * - Uses SimpleButton for the "get" action.
+ * - Uses SimpleError to display error messages.
+ *
+ * Usage:
+ * ```tsx
+ * <ExistsInput />
+ * ```
+ *
+ * Note:
+ * - The token ID must be numeric.
+ * - Input is cleared after each request.
+ */
 
 const ExistsInput: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false);
@@ -17,12 +46,7 @@ console.log("Component 'ExistsInput' booted");
   };
 
   const _handleClick = async () => {
-    let onlyNumbers = /^\d+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers, please");
-      console.warn("Only numbers in input 'id', please");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setError(undefined);
     setLoad(true); 

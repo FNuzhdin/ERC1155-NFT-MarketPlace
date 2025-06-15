@@ -4,6 +4,31 @@ import { useTokenRead, writeToken } from "@/hooks/TokenContract";
 import SimpleError from "../Errors/SimpleError";
 import SimpleButton from "./SimpleButton";
 
+/**
+ * PausedButton component
+ *
+ * Purpose:
+ * - Allows the user to change the state of a token contract by pausing or unpausing it.
+ * - Displays current contract state ("Paused" or "Active") and provides a button to toggle the state.
+ *
+ * Features:
+ * - Reads contract's paused state using `useTokenRead("paused")`.
+ * - Calls the appropriate contract method (`pause` or `unpause`) via `writeToken` depending on current state.
+ * - Shows loading indicator while transaction is pending.
+ * - Displays errors using the SimpleError component.
+ * - Shows different icons: FaPause for "pause", FaPlay for "unpause".
+ *
+ * Usage:
+ * ```tsx
+ * <PausedButton />
+ * ```
+ *
+ * Dependencies:
+ * - @react-icons/fa (FaPause, FaPlay)
+ * - useTokenRead, writeToken (custom contract hooks)
+ * - SimpleButton, SimpleError (UI components)
+ */
+
 const PausedButton: React.FC = () => {
   const {
     data: paused,

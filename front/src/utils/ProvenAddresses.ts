@@ -9,10 +9,7 @@ if (
   throw new Error("Incorrect tokenAddr from DeployingData.json");
 }
 export const TOKEN_ADDR =
-  DeployingData.tokenAddr as `0x${string}`; /* в README можно прописать, что 
-сюда и в другие места с адресом автомтом подтягивается тот, 
-который мы получаем после деплоя, он в файле DeployingData.json */
-
+  DeployingData.tokenAddr as `0x${string}`; 
 if (
   !(
     DeployingData.marketAddr.substring(0, 2) === "0x" &&

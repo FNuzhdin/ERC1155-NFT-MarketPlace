@@ -4,6 +4,38 @@ import { useState } from "react";
 import { readToken } from "@/hooks/TokenContract";
 import SimpleError from "../../Errors/SimpleError";
 
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * URIInput component
+ *
+ * A simple component for retrieving the metadata URI of a token by its id.
+ * Available to both regular users and contract owners.
+ *
+ * Features:
+ * - Allows the user to input a token id.
+ * - Validates that the id is numeric.
+ * - Fetches the token's metadata URI by calling the `uri` method on the smart contract.
+ * - Displays the URI as a result and provides a button to clear it.
+ * - Handles loading state and error messages.
+ *
+ * UI:
+ * - Uses a standard input for the id field.
+ * - Uses a button for the "get" action.
+ * - Uses another button to clear the displayed URI.
+ * - Uses SimpleError to display error messages.
+ *
+ * Usage:
+ * ```tsx
+ * <URIInput />
+ * ```
+ *
+ * Note:
+ * - The token id must be numeric.
+ * - Both regular users and owners can use this component to view the token's metadata URI.
+ * - Shows "empty" if the token does not have a set URI.
+ */
+
 const URIInput: React.FC = () => {
   const [id, setId] = useState<string>("");
   const [error, setError] = useState<string | undefined>(undefined);
@@ -17,12 +49,7 @@ const URIInput: React.FC = () => {
   };
 
   const _getTokenURI = async () => {
-    let onlyNumbers = /^\d+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers, please");
-      console.warn("Only numbers in input 'id', please");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setError(undefined);
     setLoad(true);

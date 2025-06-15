@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* header */
+/* Header */
 .header {
   background: rgba(37, 37, 37, 0.97);
   display: flex;
@@ -33,9 +33,8 @@ body {
   align-items: center;
   height: 100px;
 }
-/*_________ */
 
-/* логотип маркета */
+/* Market logo */
 .logo {
   width: 80px;
   height: 80px;
@@ -43,9 +42,8 @@ body {
   margin-left: 20px;
   margin-right: 20px;
 }
-/*_________ */
 
-/* кнопка для Connect */
+/* Connect button */
 .animated-gradient-btn {
   position: relative;
   display: inline-block;
@@ -110,19 +108,18 @@ body {
   outline: none;
   box-shadow: 0 0 0 3px #ffcc00aa;
 }
-/* _____ */
 
-/* заголовок для маркета */
+/* Marketplace heading */
 .h1 {
-  font-size: 3rem;           /* крупный размер шрифта */
-  font-weight: 800;          /* очень жирный */
-  letter-spacing: 0.04em;    /* немного увеличенное расстояние между буквами */
-  color: #232323;            /* глубокий тёмный цвет */
-  text-align: center;        /* по центру */
-  margin-top: 2.5rem;        /* верхний отступ */
-  margin-bottom: 2rem;       /* нижний отступ */
-  line-height: 1.1;          /* плотное межстрочное расстояние */
-  text-shadow: 0 4px 16px rgba(0,0,0,0.07); /* мягкая тень для объёма */
+  font-size: 3rem;           
+  font-weight: 800;          
+  letter-spacing: 0.04em;    
+  color: #232323;        
+  text-align: center;        
+  margin-top: 2.5rem;        
+  margin-bottom: 2rem;       
+  line-height: 1.1;          
+  text-shadow: 0 4px 16px rgba(0,0,0,0.07); 
 }
 
 .h1-gradient {
@@ -134,53 +131,18 @@ body {
   text-align: center;
 }
 
-.h2 {
-  font-size: 3rem;           /* крупный размер шрифта */
-  font-weight: 800;          /* очень жирный */
-  letter-spacing: 0.04em;    /* немного увеличенное расстояние между буквами */
-  color: #232323;            /* глубокий тёмный цвет */
-  text-align: center;        /* по центру */
-  margin-top: 0.5rem;        /* верхний отступ */
-  margin-bottom: 0.8rem;       /* нижний отступ */
-  line-height: 1.1;          /* плотное межстрочное расстояние */
-  text-shadow: 0 4px 16px rgba(0,0,0,0.07); 
-}
-/*___________*/
-
-/* контейнер для данных пользователя */
-.top-right-container {
-  margin-top: 10px;
-  position: fixed;
-  right: 2rem;
-  min-width: 320px;
-  min-height: 120px;
-  max-width: 90vw;
-  max-height: 90vh;
-  padding: 1.5rem 2rem;
-  background: rgba(37, 37, 37, 0.7);
-  border-radius: 1.25rem;
-  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
-    0 1.5px 5px rgba(40, 40, 60, 0.08);
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  overflow: auto;
-}
-/* _____ */
-
-/* контейнер для элементов */
+/* Container for elements */
 .containers-wrapper {
   padding-bottom: 60px;
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
-  justify-content: flex-start; /* можно center, если нужно по центру */
+  justify-content: flex-start; 
   align-items: flex-start;
   margin: 2rem;
 }
-/*__________*/
 
-/* контейнер для элементов */
+/* Standard flex container */
 .flex-container-standart {
   width: 310px;
   min-height: 240px;
@@ -192,11 +154,10 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; /* убираем внешний отступ, gap у wrapper */
+  margin: 0; 
 }
-/* _____ */
 
-/* среднего размера */
+/* Medium flex container */
 .flex-container-medium {
   width: 300px;
   height: 280px;
@@ -208,10 +169,10 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; /* убираем внешний отступ, gap у wrapper */
+  margin: 0; 
 }
 
-/* без размера */
+/* Unsize flex container */
 .flex-container-unsize {
   min-width: 100px;
   min-height: 100px;
@@ -223,11 +184,10 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; /* убираем внешний отступ, gap у wrapper */
+  margin: 0; 
 }
-/* _____ */
 
-/* для изображений */
+/* For images */
 .img-limited {
   max-width: 250px;
   max-height: 250px;
@@ -236,9 +196,8 @@ body {
   display: block;
   object-fit: contain;
 }
-/*____________*/
 
-/* input для id  */
+/* Input with white border (for id) */
 .input-white-border {
   width: 150px;
   text-align: center;
@@ -250,9 +209,8 @@ body {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-/* _____ */
 
-/* зеленый заголовок h1*/
+/* Green h1 heading */
 .h1-green {
   color: #30c46c;
   font-size: 1.5rem;
@@ -261,18 +219,16 @@ body {
   margin-bottom: 0, 5rem;
   margin-top: 1rem;
 }
-/* _____ */
 
-/* зеленый заголовок h2*/
+/* Green h2 heading */
 .h2-green {
   margin-top: 0.5rem;
   margin-bottom: 5px;
   color: #30c46c;
   font-weight: 600;
 }
-/* _____ */
 
-/* небольшая черная кнопка */
+/* Small black button */
 .small-black-button {
   display: inline-block;
   padding: 0.5em 1.4em;
@@ -298,9 +254,8 @@ body {
   background: #111;
   transform: scale(0.97);
 }
-/* _____ */
 
-/* черная кнопка для функций */
+/* Small black button for functions */
 .small-black-button2 {
   display: inline-block;
   padding: 0.25em 1.4em;
@@ -325,9 +280,8 @@ body {
   background: #111;
   transform: scale(0.97);
 }
-/* _____ */
 
-/* черная кнопка для покупки */
+/* Small green buy button */
 .small-green-button {
   display: inline-block;
   padding: 0.25em 1.4em;
@@ -352,9 +306,8 @@ body {
   background: #111;
   transform: scale(0.97);
 }
-/* _____ */
 
-/* черная кнопка для продажи */
+/* Small orange sell button */
 .small-orange-button {
   display: inline-block;
   padding: 0.25em 1.4em;
@@ -379,9 +332,8 @@ body {
   background: #111;
   transform: scale(0.97);
 }
-/* _____ */
 
-/* кнопка для header */
+/* Small header button for sections */
 .small-button-header {
   display: inline-block;
   padding: 0.25em 1.4em;
@@ -409,27 +361,24 @@ body {
   background: #111;
   transform: scale(0.97);
 }
-/* _____ */
 
-/* контейнер для кнопки */
+/* Transparent sidebar right (button container) */
 .transparent-sidebar-right {
   position: fixed;
   top: 0;
   right: 0;
   margin-top: 20px;
 }
-/* _____ */
 
-/* контейнер для кнопки */
+/* Transparent sidebar left (button container) */
 .transparent-sidebar-left {
   position: fixed;
   top: 0;
   left: 0;
   margin-top: 20px;
 }
-/* _____ */
 
-/* контейнер по центру экрана */
+/* Centered container */
 .centered-container {
   min-height: 50vh;
   display: flex;
@@ -437,9 +386,8 @@ body {
   justify-content: center;
   align-items: center;
 }
-/* _____ */
 
-/* красный параграф для ошибок */
+/* Red error message paragraph */
 .error-message {
   color: #d32f2f;
   font-size: 1rem;
@@ -448,23 +396,20 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-/* _____ */
 
-/* красный параграф для ошибок */
+/* Simple red error message (inline) */
 .simple-error-message {
   color: #ff3333;
   display: inline;
 }
-/* _____ */
 
-/* зеленый параграф */
+/* Green paragraph */
 .green-paragraph {
   color: #22b14c;
   text-align: center;
 }
-/* _____ */
 
-/* заголовок по центру */
+/* Centered title */
 .centered-title {
   text-align: center;
   margin-bottom: 16px;
@@ -489,13 +434,13 @@ body {
   font-size: 2.35rem;
   opacity: 1;
 }
-/* _____ */
 
+/* Aquamarine paragraph */
 .aquamarine-paragraph {
   color: #41e5d9;
 }
 
-/* aдрес и этикетка у края */
+/* Address row */
 .address-row {
   display: flex;
   align-items: center;
@@ -503,9 +448,8 @@ body {
   font-size: 1.05rem;
   justify-content: flex-start;
 }
-/*_________ */
 
-/* footer */
+/* Footer */
 .footer {
   margin-top: 40px;
   position: fixed;
@@ -522,9 +466,8 @@ body {
   font-size: 1.05rem;
   z-index: 100;
 }
-/*_________ */
 
-/* баланс */
+/* ETH row (balance row) */
 .eth-row {
   display: flex;
   align-items: center;
@@ -532,33 +475,29 @@ body {
   font-size: 1.05rem;
   justify-content: flex-start;
 }
-/*_________ */
 
-/* элементы в ряд */
+/* Elements in a row */
 .simple-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-/*_________ */
 
-/* элементы в столбик */
+/* Elements in a column (vertical stack) */
 .vertical-stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-/*_________ */
 
-/* центрирование кнопки */
+/* Centered button row */
 .disconnect-row {
   display: flex;
   justify-content: center;
   margin: 16px 0;
 }
-/*_________ */
 
-/* input для загрузки изображений */
+/* Upload label (image input) */
 .upload-label {
   display: flex;
   margin-bottom: 15px;
@@ -577,7 +516,7 @@ body {
 }
 
 .upload-label:hover {
-  border-color: #3b82f6; /* синий */
+  border-color: #3b82f6; /* blue */
   color: #3b82f6;
 }
 
@@ -594,37 +533,8 @@ body {
 .upload-label input[type="file"] {
   display: none;
 }
-/*_____________*/
 
-/* */
+/* Orange paragraph */
 .orange-p {
   color: #ffa43e;
 }
-/*_____________*/
-
-/* */
-.small-orange-button {
-  display: inline-block;
-  padding: 0.25em 1.4em;
-  font-size: 1rem;
-  font-weight: 500;
-  color: black;
-  background: #ffa43e;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.18s, transform 0.08s;
-  box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.09);
-}
-
-.small-orange-button:hover,
-.small-orange-button:focus {
-  background: #262626;
-  outline: none;
-}
-
-.small-orange-button:active {
-  background: #111;
-  transform: scale(0.97);
-}
-/*_____________*/

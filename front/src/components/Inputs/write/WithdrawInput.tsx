@@ -1,8 +1,36 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import { writeToken } from "@/hooks/TokenContract";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * WithdrawInput component
+ *
+ * Allows the contract owner to withdraw a single token (by id) from the TokenERC1155 contract if it was accidentally sent there.
+ *
+ * Key points:
+ * - Only the owner can use this component.
+ * - Enter token id (number) to withdraw it from the contract.
+ * - Calls `withdrawSingle` on the TokenERC1155 contract.
+ * - Shows loading state and error messages if input is invalid or transaction fails.
+ *
+ * UI:
+ * - `SimpleInput` for token id.
+ * - `SimpleButton` to confirm withdrawal.
+ * - `SimpleError` to display errors.
+ *
+ * Usage:
+ * ```tsx
+ * <WithdrawInput />
+ * ```
+ *
+ * Notes:
+ * - For owner use only.
+ * - Use to recover a token that ended up in the TokenERC1155 contract by mistake.
+ * - Field clears after operation.
+ */
 
 const WithdrawInput: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -16,11 +44,7 @@ const WithdrawInput: React.FC = () => {
   };
 
   const _handleClick = async () => {
-    let onlyNumbers = /^\d+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers, please!");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return;
 
     setLoad(true);
     setError(undefined);

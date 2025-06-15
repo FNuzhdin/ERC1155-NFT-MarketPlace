@@ -1,8 +1,38 @@
 import React, { useState } from "react";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import SimpleInput from "../SimpleInput";
 import { readToken } from "@/hooks/TokenContract";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * BalanceInput component
+ *
+ * A form component for querying the balance of a specific token ID for a given account address.
+ * Intended for viewing token balances by any user.
+ *
+ * Features:
+ * - Allows the user to enter a token ID and an Ethereum account address.
+ * - Validates the address format and that the token ID is a number.
+ * - Calls the `balanceOf` method on the smart contract to fetch the balance.
+ * - Displays the retrieved balance or an error message.
+ * - Disables inputs and button during loading.
+ *
+ * UI:
+ * - Uses SimpleInput for token ID and account address fields.
+ * - Uses SimpleButton for the "get" action.
+ * - Uses SimpleError to display error messages.
+ *
+ * Usage:
+ * ```tsx
+ * <BalanceInput />
+ * ```
+ *
+ * Note:
+ * - The account field must be a valid Ethereum address (0x... and 42 chars).
+ * - The token ID field must be numeric.
+ * - Inputs are reset after a request.
+ */
 
 const BalanceInput: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false);
@@ -34,13 +64,7 @@ const BalanceInput: React.FC = () => {
       setBalanceData({ id: "", account: "" });
       return;
     } else {
-      let onlyNumbers = /^\d+$/.test(balanceData.id);
-      if (!onlyNumbers) {
-        setError("Only numbers, please");
-        setBalanceData({ id: "", account: "" });
-        console.warn("Only numbers in input 'id', please");
-        return;
-      }
+      if(!onlyNumbers({param: balanceData.id, setError})) return;
 
       setError(undefined);
       setLoad(true);

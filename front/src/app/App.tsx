@@ -6,7 +6,7 @@ import { useAccount } from "wagmi";
 import WalletAndInfo from "@/components/WalletConnect/WalletAndInfo";
 import MarketPlace from "@/components/Market/MarketPlace";
 
-import SimpleButton from "../components/buttons/SimpleButton";
+import SimpleButton from "../components/Buttons/SimpleButton";
 import TokenAdminInterface from "../components/Token/TokenAdminIntrface";
 import MarketAdminInterface from "../components/Market/MarketAdminInterface";
 import TokenUserInterface from "../components/Token/TokenUserInterface";
@@ -18,6 +18,24 @@ export type IsAdmin = {
   adminToken: boolean;
   adminMarket: boolean;
 };
+
+/**
+ * Main app component for marketplace dApp.
+ * - Uses wagmi's useAccount for wallet/chain info.
+ * - Determines admin status; shows admin/user token & market interfaces.
+ * - Header buttons switch between Token functions, Market functions, and Marketplace.
+ * - Shows wallet/info panel with WalletAndInfo.
+ * - Warns if network is not hardhat or sepolia.
+ * - Handles hydration before render.
+ * 
+ * State:
+ * - admin: user admin rights for token/market
+ * - show: active tab/interface
+ * - showInfo: toggle info panel
+ * - hydrated: hydration status
+ * 
+ * Dependencies: wagmi, WalletAndInfo, MarketPlace, Token/Market[Admin|User]Interface, SimpleButton, orange_192.png
+ */
 
 const App: React.FC = () => {
   const { address, isConnected, chain } = useAccount();
@@ -119,7 +137,6 @@ const App: React.FC = () => {
       <WalletAndInfo
         address={address}
         isConnected={isConnected}
-        chain={chain}
         setAdmin={setAdmin}
         admin={admin}
         show={showInfo}

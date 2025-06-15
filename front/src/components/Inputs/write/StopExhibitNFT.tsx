@@ -1,8 +1,35 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
 import SimpleError from "@/components/Errors/SimpleError";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 import { writeMarket } from "@/hooks/MarketContract";
+import { onlyNumbers } from "@/utils/FormatChecks";
+
+/**
+ * StopExhibitNFT component
+ *
+ * Allows a user to remove their NFT (by id) from sale on the marketplace and return it to their wallet.
+ *
+ * Key points:
+ * - Enter the NFT id to stop exhibiting it (must be a number).
+ * - Calls the `stopExhibitNFT` method on the marketplace contract.
+ * - Shows loading status and the transaction hash on success.
+ * - Displays error messages for invalid input or transaction failures.
+ *
+ * UI:
+ * - `SimpleInput` for id entry.
+ * - `SimpleButton` for confirmation.
+ * - `SimpleError` for errors.
+ *
+ * Usage:
+ * ```tsx
+ * <StopExhibitNFT />
+ * ```
+ *
+ * Notes:
+ * - Any user can use this component for their own NFTs.
+ * - After a successful operation, the input is cleared and the transaction hash is partially shown.
+ */
 
 const StopExhibitNFT: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false);
@@ -15,11 +42,7 @@ const StopExhibitNFT: React.FC = () => {
   };
 
   const _handleClick = async() => {
-    const onlyNumbers = /^\d+$/.test(id);
-    if (!onlyNumbers) {
-      setError("Only numbers in id");
-      return;
-    }
+    if(!onlyNumbers({param: id, setError})) return; 
 
     setError(undefined);
     setLoad(true);

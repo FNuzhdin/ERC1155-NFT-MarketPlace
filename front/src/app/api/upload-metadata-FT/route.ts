@@ -5,6 +5,37 @@ const pinata = new PinataSDK({
   pinataJwt: process.env.PINATA_JWT!,
 });
 
+/**
+ * POST /api/upload-metadata-FT
+ * 
+ * Uploads an image and metadata to IPFS via Pinata.
+ * 
+ * Expects multipart/form-data:
+ * - file: PNG image
+ * - name, description, symbol: JSON-stringified strings
+ * - currentId: stringified integer
+ * 
+ * Responds (200):
+ * {
+ *   "imageUri": "bafy.../",
+ *   "metadataUri": "bafy.../",
+ *   "imageCID": "bafy...",
+ *   "metadataCID": "bafy..."
+ * }
+ * 
+ * Metadata example:
+ * {
+ *   "name": "tokenName",
+ *   "description": "tokenDescription",
+ *   "image": "bafy.../",
+ *   "decimals": 18,
+ *   "symbol": "TKN"
+ * }
+ * 
+ * Errors: 400 (missing fields), 500 (upload errors)
+ * Requires env: PINATA_JWT
+ */
+
 export async function POST(req: NextRequest) {
   console.log("POST status: started");
   try {
@@ -44,12 +75,12 @@ export async function POST(req: NextRequest) {
     // Upload images
     const imageUpload = await pinata.upload.file(web3File);
     const imageCID = imageUpload.IpfsHash;
-    const imageBaseURI = `${imageCID}/`; /* изменил ссылку */
+    const imageBaseURI = `${imageCID}/`; 
 
     const metadata = {
       name,
       description,
-      image: `${imageBaseURI}`, // изменил ссылка
+      image: `${imageBaseURI}`, 
       decimals: 18, // Only 18 decimals
       symbol,
     };
@@ -64,7 +95,7 @@ export async function POST(req: NextRequest) {
     // Upload metadata
     const metadataUpload = await pinata.upload.file(metadataFile);
     const metadataCID = metadataUpload.IpfsHash;
-    const metadataBaseURI = `${metadataCID}/`; /* изменил ссылку */
+    const metadataBaseURI = `${metadataCID}/`; 
 
     console.log("POST status: succes!");
     return new Response(

@@ -1,9 +1,48 @@
 import React, { useState } from "react";
 
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "@/components/buttons/SimpleButton";
+import SimpleButton from "@/components/Buttons/SimpleButton";
 import SimpleError from "@/components/Errors/SimpleError";
 import { writeMarket } from "@/hooks/MarketContract";
+import { onlyNumbersComma } from "@/utils/FormatChecks";
+
+/**
+ * SetPriceNFTBatch component
+ *
+ * This component allows any user to batch set prices for multiple NFTs that they have already listed for sale on the marketplace.
+ * Only NFTs already exhibited by the user can have their prices updated through this form.
+ *
+ * Features:
+ * - **Batch Set NFT Prices:**  
+ *   Users can input comma-separated lists of NFT ids and corresponding prices (in wei).
+ *   Both lists must be the same length (one price per id).
+ *   Calls the `setPriceNFTBatch` method on the market contract to update the prices in a single transaction.
+ *
+ * - **Validation:**  
+ *   Checks that both ids and prices are comma-separated lists of numbers.
+ *   Verifies that both lists have the same length.
+ *   Only allows price updates for NFTs the user has already put up for sale.
+ *
+ * - **User Feedback:**  
+ *   Displays loading state during the transaction.
+ *   Shows the transaction hash upon success.
+ *   Displays clear error messages for input or contract errors.
+ *
+ * UI:
+ * - Uses `SimpleInput` for ids and prices.
+ * - Uses `SimpleButton` for the "set" action.
+ * - Uses `SimpleError` to display error messages.
+ *
+ * Usage:
+ * ```tsx
+ * <SetPriceNFTBatch />
+ * ```
+ *
+ * Notes:
+ * - Any user can use this component, but can only set prices for NFTs they own and have listed for sale.
+ * - Input fields are cleared after a transaction.
+ * - Transaction hash is partially shown after a successful call.
+ */
 
 const SetPriceNFTBatch: React.FC = () => {
   const [data, setData] = useState<{ ids: string; prices: string }>({
@@ -23,13 +62,8 @@ const SetPriceNFTBatch: React.FC = () => {
   }
 
   const _handleClick = async() => {
-    const formatId = /^[\d\s,]+$/.test(data.ids);
-    const formatPrices = /^[\d\s,]+$/.test(data.prices);
-
-    if(!(formatId || formatPrices)) {
-        setError("Only numbers, comma and space in ids, values!");
-        return;
-    }
+    if(!onlyNumbersComma({param: data.ids, setError})) return;
+    if(!onlyNumbersComma({param: data.prices, setError})) return;
 
     const idsArr = data.ids.split(",").map(i => Number(i.trim()));
     const pricesArr = data.prices.split(",").map(i => Number(i.trim()));

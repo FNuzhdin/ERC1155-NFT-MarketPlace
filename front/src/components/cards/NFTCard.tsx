@@ -4,12 +4,9 @@ import { useTokenRead } from "@/hooks/TokenContract";
 import { useMarketRead } from "@/hooks/MarketContract";
 import { writeMarket } from "@/hooks/MarketContract";
 
-import SimpleButton from "../buttons/SimpleButton";
+import SimpleButton from "../Buttons/SimpleButton";
 import { IoIosRefresh } from "react-icons/io";
 import SimpleError from "../Errors/SimpleError";
-
-import Image from "next/image";
-import question from "../../images/question.png";
 
 import type {
   QueryObserverResult,
@@ -30,6 +27,29 @@ type Metadata = {
   description: string;
   image: string;
 };
+
+/**
+ * NFTCard component
+ *
+ * Displays metadata and allows purchasing of a single NFT from the marketplace.
+ *
+ * State variables:
+ * - `metadataUri`: Holds the metadata URI (usually an IPFS CID) for the NFT.
+ * - `metadata`: Parsed metadata object (name, description, image) fetched from IPFS.
+ * - `error`: String for error messages, displayed to the user.
+ * - `price`: Current NFT price in wei, fetched from the market contract.
+ * - `load`: Boolean indicating if a buy transaction is in progress.
+ *
+ * Loads on-chain data using contract hooks for URI and price.
+ * Fetches and validates metadata from IPFS.
+ * Handles the buy operation with appropriate loading and error handling.
+ * If the price is not set (undefined or zero), disables purchase and shows a warning.
+ *
+ * Props:
+ * - `id`: NFT token ID (bigint)
+ * - `address`: User wallet address
+ * - `refetch`: Function to refetch parent/query data after purchase
+ */
 
 const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
   const { data: uri, isLoading: loadingUri } = useTokenRead("uri", [id]);
@@ -66,6 +86,11 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
     }
   }, [loadingPrice, currentPrice]);
 
+  /**
+   * Loads and validates NFT metadata from IPFS whenever metadataUri changes.
+   * Sends a POST request to /api/get-ipfs-metadata.
+   * Sets metadata if valid, else sets error.
+   */
   useEffect(() => {
     (async () => {
       if (metadataUri) {
@@ -117,7 +142,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
     refetch();
   };
 
-  /* чтобы не отображалось nft, если не установлена цена */
+  // Don't render NFT for purchase if price isn't set
   if (price === undefined || price === BigInt(0)) {
     return (
       <div className="vertical-stack">
@@ -172,6 +197,13 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
   );
 };
 
+/**
+ * Type guard for the Metadata type.
+ * Checks if the input object conforms to the expected Metadata structure:
+ * - Must be a non-null object.
+ * - Must have string properties: name, description, image.
+ * Used to validate server responses for NFT metadata.
+ */
 export function isMetadata(obj: any): obj is Metadata {
   return (
     typeof obj === "object" &&

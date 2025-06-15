@@ -1,9 +1,39 @@
 import React, { useState } from "react";
 import SimpleInput from "../SimpleInput";
-import SimpleButton from "../../buttons/SimpleButton";
+import SimpleButton from "../../Buttons/SimpleButton";
 import SimpleError from "../../Errors/SimpleError";
 import { writeToken } from "@/hooks/TokenContract";
 import { MARKET_ADDR } from "@/utils/ProvenAddresses";
+import { onlyNumbersComma } from "@/utils/FormatChecks";
+
+/**
+ * TransferBatchInput component
+ *
+ * Lets any user transfer one or multiple tokens (NFT or FT) from their own address to any other address.
+ *
+ * Key points:
+ * - Enter receiver address, comma-separated token ids, and comma-separated values.
+ * - Calls `safeBatchTransferFrom` on the token contract to transfer the specified tokens/amounts.
+ * - If the receiver address is the marketplace address (`MARKET_ADDR`), the token(s) will be automatically listed for sale (exhibited) in the marketplace, whether FT or NFT.
+ * - Prevents sending tokens to yourself, validates addresses and input format.
+ * - Shows loading state, transaction hash, and error messages.
+ *
+ * UI:
+ * - `SimpleInput` for receiver, ids, and values.
+ * - Receiver input includes a datalist for quick selection of the marketplace address.
+ * - `SimpleButton` to confirm transfer.
+ * - `SimpleError` for error display.
+ *
+ * Usage:
+ * ```tsx
+ * <TransferBatchInput address={address} />
+ * ```
+ *
+ * Notes:
+ * - Usable by any user for their own tokens.
+ * - After sending to the marketplace address, tokens are automatically exhibited for sale as FT or NFT.
+ * - After each operation, fields are cleared and the transaction hash is partially shown.
+ */
 
 const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
   address,
@@ -38,17 +68,8 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
       return;
     }
 
-    let onlyNumbers = /^[\d\s,]+$/.test(transferData.id);
-    if (!onlyNumbers) {
-      setError("Only numbers, comma, space, please!");
-      return;
-    }
-
-    onlyNumbers = /^[\d\s,]+$/.test(transferData.value);
-    if (!onlyNumbers) {
-      setError("Only numbers, comma, space, please!");
-      return;
-    }
+    if(!onlyNumbersComma({param: transferData.id, setError})) return;
+    if(!onlyNumbersComma({param: transferData.value, setError})) return;
 
     if (address === transferData.receiver) {
       setError("Don't transfer youself");
