@@ -2,8 +2,6 @@ import React from "react";
 
 import GetterComponent from "../Inputs/view/GetterComponent";
 import SetPriceFT from "../Inputs/write/SetPriceFT";
-import PlaceInQueue from "../Inputs/view/PlaceInQueue";
-import StopExhibitFT from "../Inputs/write/StopExhibitFT";
 import StopExhibitNFT from "../Inputs/write/StopExhibitNFT";
 import StopExhibitNFTBatch from "../Inputs/write/StopExhibitNFTBatch";
 import SetPriceNFTBatch from "../Inputs/write/SetPriceNFTBatch";

@@ -4,7 +4,7 @@ import { WagmiProvider, http, createConfig } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import App from "@/app/App";
+import App from "../app/App";
 
 const newHardhat = { ...hardhat, id: 1337}; 
 

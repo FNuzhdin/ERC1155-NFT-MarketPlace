@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import URIInput from "../Inputs/view/URIInput";
 import BurnInput from "../Inputs/write/BurnInput";
 import SupplyInput from "../Inputs/view/SupplyInput";

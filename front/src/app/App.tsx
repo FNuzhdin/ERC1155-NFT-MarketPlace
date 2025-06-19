@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
-import WalletAndInfo from "@/components/WalletConnect/WalletAndInfo";
-import MarketPlace from "@/components/Market/MarketPlace";
+import WalletAndInfo from "../components/WalletConnect/WalletAndInfo";
+import MarketPlace from "../components/Market/MarketPlace";
 
 import SimpleButton from "../components/Buttons/SimpleButton";
 import TokenAdminInterface from "../components/Token/TokenAdminIntrface";

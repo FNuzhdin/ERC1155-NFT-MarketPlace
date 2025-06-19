@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 
 import { useTokenRead } from "@/hooks/TokenContract";
-import { useMarketRead } from "@/hooks/MarketContract";
 import { writeMarket } from "@/hooks/MarketContract";
 
 import SimpleButton from "../Buttons/SimpleButton";
