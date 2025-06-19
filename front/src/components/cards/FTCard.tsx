@@ -13,6 +13,8 @@ import question from "../../images/question.png";
 import Image from "next/image";
 import { onlyNumbers } from "@/utils/FormatChecks";
 
+import { formatUnits } from "ethers";
+
 type FTCardProps = {
   id: bigint;
   address: `0x${string}` | undefined;
@@ -56,8 +58,11 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
     isLoading: loadingPrice,
     refetch: refetchPrice,
   } = useMarketRead("getPriceFT", [id]);
-  const { data: marketTokenBalance, isLoading: loadingMarketBalance } =
-    useTokenRead("balanceOf", [MARKET_ADDR, id]);
+  const {
+    data: marketTokenBalance,
+    isLoading: loadingMarketBalance,
+    refetch: refetchBalance,
+  } = useTokenRead("balanceOf", [MARKET_ADDR, id]);
 
   const [metadataUri, setMatadataUri] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -96,13 +101,14 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
     }
   }, [uri, loadingUri]);
 
-
   /**
    * Loads and validates token metadata from IPFS whenever metadataUri changes.
    * Sends a POST request to /api/get-ipfs-metadata.
    * Sets metadata if valid, else sets error.
    */
   useEffect(() => {
+    let isMounted = true;
+
     (async () => {
       if (metadataUri) {
         try {
@@ -120,17 +126,21 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
           console.log("Metadata object:", obj);
 
           if (isMetadata(obj)) {
-            setMetadata(obj);
+            if(isMounted) setMetadata(obj);
           } else {
             console.error("Object from server have incorrect format");
-            setError("Incorrect format metadata");
+            if(isMounted) setError("Incorrect format metadata");
           }
         } catch (e) {
           console.error(e);
-          setError("Server error!");
+          if(isMounted) setError("Server error!");
         }
       } else console.log("metadata don't exists");
     })();
+
+    return () => {
+      isMounted = false;
+    }
   }, [metadataUri]);
 
   const _handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,7 +148,7 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
   };
 
   const _handleClickBuy = async () => {
-    if(!onlyNumbers({param: value, setError})) return;
+    if (!onlyNumbers({ param: value, setError })) return;
 
     if (Number(value) === 0) {
       setError("Zero value prohibited");
@@ -166,10 +176,11 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
       setLoad(false);
       setValue("");
     }
+    refetchBalance();
   };
 
   const _handleClickSell = async () => {
-    if(!onlyNumbers({param: value, setError})) return;
+    if (!onlyNumbers({ param: value, setError })) return;
 
     if (Number(value) === 0) {
       setError("Zero value prohibited");
@@ -198,29 +209,57 @@ const FTCard: React.FC<FTCardProps> = ({ id, address }) => {
       setLoad(false);
       setValue("");
     }
+    refetchBalance();
   };
 
   return (
     <div className="vertical-stack, flex-container-unsize">
       {!loadingUri && metadata ? (
-        <div className="simple-row">
+        <div>
           <img
-          className="img-limited"
-          src={`https://ipfs.io/ipfs/${metadata?.image}`}
-          alt="IPFS Image"
-        />
-          <p>Name: {metadata.name}</p>
-          <p>Symbol: {metadata.symbol}</p>
+            className="img-limited"
+            src={`https://ipfs.io/ipfs/${metadata?.image}`}
+            alt="IPFS Image"
+          />
+          <div className="simple-row">
+            <p className="green-paragraph">Name:</p>
+            <p>{metadata.name}</p>
+          </div>
+
+          <div className="simple-row">
+            <p className="pink-p">Symbol:</p>
+            <p>{metadata.symbol}</p>
+          </div>
+
+          <div className="simple-row">
+            <p className="orange-p">id:</p>
+            <p>#{id}</p>
+          </div>
         </div>
       ) : (
         <Image src={question} alt="..." className="img-limited" />
       )}
 
-      {balance && <p>Availible: {balance / BigInt(1000000)}million Tokens</p>}
+      {balance !== undefined && (
+        <div className="simple-row">
+          <p>Availible:</p>
+          <p className="green-paragraph">
+            {balance === BigInt(0) ? 0 : formatUnits(balance, 6)}
+          </p>
+          <p>{balance === BigInt(0) ? "Tokens" : "millions Tokens"}</p>
+        </div>
+      )}
 
       {price && (
         <div className="simple-row">
-          <p>1 token: {loadingPrice ? "Loading..." : price} wei</p>
+          <div className="simple-row">
+            <p>Price:</p>
+            <p className="green-paragraph">
+              {loadingPrice ? "Loading..." : price}
+            </p>
+            <p>wei</p>
+          </div>
+
           <SimpleButton onClick={() => refetchPrice()} disabled={loadingPrice}>
             <IoIosRefresh />
           </SimpleButton>

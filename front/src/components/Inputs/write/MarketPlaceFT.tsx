@@ -51,9 +51,16 @@ const MarketPlaceFT: React.FC<{ address: `0x${string}` | undefined }> = ({
     }
   }, [tokensArr, isLoading]);
 
+  if (ids.length === 0)
+    return (
+      <div>
+        <h1 className="h1">FT</h1>
+        <h3 className="h3">No product</h3>
+      </div>
+    );
+
   return (
     <div>
-    
       <div className="vertical-stack">
         <ul className="simple-row">
           {ids.map((id) => (

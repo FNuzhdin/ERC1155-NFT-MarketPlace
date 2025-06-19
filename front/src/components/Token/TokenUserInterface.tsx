@@ -57,7 +57,7 @@ const TokenUserInterface: React.FC<TokenUserInterfaceProps> = ({ address }) => {
     </div>
     <div className="flex-container-unsize">
       <ExistsInput />
-      <BalanceInput />
+      <BalanceInput address={address}/>
     </div>
     <div className="flex-container-unsize">
       <TransferInput address={address} />

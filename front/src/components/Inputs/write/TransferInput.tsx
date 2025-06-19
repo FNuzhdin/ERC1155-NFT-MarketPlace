@@ -111,9 +111,9 @@ const TransferInput: React.FC<{ address: `0x${string}` | undefined }> = ({
           value={transferData.receiver}
           onChange={_handleChange}
           disabled={load}
-          list={"receiver-list"}
+          list={"receiver-list1"}
         />
-        <datalist id="receiver-list">
+        <datalist id="receiver-list1">
           <option value={MARKET_ADDR} label="Market place address" />
         </datalist>
         <SimpleInput

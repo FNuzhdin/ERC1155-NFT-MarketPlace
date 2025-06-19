@@ -43,6 +43,26 @@ body {
   margin-right: 20px;
 }
 
+/* Data user container */
+.top-right-container {
+  margin-top: 10px;
+  position: fixed;
+  right: 2rem;
+  min-width: 320px;
+  min-height: 120px;
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 1.5rem 2rem;
+  background: rgba(37, 37, 37, 0.7);
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 32px rgba(60, 60, 100, 0.14),
+    0 1.5px 5px rgba(40, 40, 60, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: auto;
+}
+
 /* Connect button */
 .animated-gradient-btn {
   position: relative;
@@ -111,15 +131,15 @@ body {
 
 /* Marketplace heading */
 .h1 {
-  font-size: 3rem;           
-  font-weight: 800;          
-  letter-spacing: 0.04em;    
-  color: #232323;        
-  text-align: center;        
-  margin-top: 2.5rem;        
-  margin-bottom: 2rem;       
-  line-height: 1.1;          
-  text-shadow: 0 4px 16px rgba(0,0,0,0.07); 
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #232323;
+  text-align: center;
+  margin-top: 2.5rem;
+  margin-bottom: 2rem;
+  line-height: 1.1;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
 }
 
 .h1-gradient {
@@ -137,7 +157,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
-  justify-content: flex-start; 
+  justify-content: flex-start;
   align-items: flex-start;
   margin: 2rem;
 }
@@ -154,7 +174,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; 
+  margin: 0;
 }
 
 /* Medium flex container */
@@ -169,7 +189,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; 
+  margin: 0;
 }
 
 /* Unsize flex container */
@@ -184,7 +204,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  margin: 0; 
+  margin: 0;
 }
 
 /* For images */
@@ -226,6 +246,18 @@ body {
   margin-bottom: 5px;
   color: #30c46c;
   font-weight: 600;
+}
+
+.h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #75344e;
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.18;
+  text-shadow: 0 2px 8px rgba(41, 65, 114, 0.08);
 }
 
 /* Small black button */
@@ -516,7 +548,7 @@ body {
 }
 
 .upload-label:hover {
-  border-color: #3b82f6; /* blue */
+  border-color: #3b82f6; 
   color: #3b82f6;
 }
 
@@ -534,7 +566,53 @@ body {
   display: none;
 }
 
-/* Orange paragraph */
+/* Colored paragraphs */
 .orange-p {
   color: #ffa43e;
+}
+
+.pink-p {
+  color: #c22d68;
+}
+
+.green-p {
+  color: #ffa43e;
+}
+
+/* Checkbox for "Only NFT" */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  gap: 8px;
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.checkbox-input:checked + .custom-checkbox::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 6px;
+  height: 12px;
+  border: solid #35b729;
+  border-width: 0 3px 3px 0;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  display: block;
 }

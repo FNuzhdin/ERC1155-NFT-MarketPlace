@@ -82,7 +82,7 @@ const SupplyInput: React.FC = () => {
             onChange={_handleChange}
             disabled={load}
           />
-          {supply && (
+          {supply !== undefined && (
             <div>
               <p>
                 Current supply:

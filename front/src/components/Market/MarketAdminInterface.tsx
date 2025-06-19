@@ -52,10 +52,6 @@ const MarketAdminInterface: React.FC<MarketAdminInterfaceProps> = ({ address }) 
             <SetPriceFT />
         </div>
         <div className="flex-container-unsize">
-            <PlaceInQueue address={address}/>
-        </div>
-        <div className="flex-container-unsize">
-            <StopExhibitFT />
             <StopExhibitNFT />
             <StopExhibitNFTBatch />
         </div>

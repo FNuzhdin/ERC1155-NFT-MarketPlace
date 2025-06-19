@@ -58,7 +58,7 @@ const TokenAdminInterface: React.FC<TokenAdminInterfaceProps> = ({
   console.log("Component 'TokenAdminInterface' booted");
   return (
     <div className="containers-wrapper">
-      <div className="flex-container-medium">
+      <div className="flex-container-unsize">
         <URIInput />
         <SupplyInput />
         <PausedButton />
@@ -74,7 +74,7 @@ const TokenAdminInterface: React.FC<TokenAdminInterfaceProps> = ({
 
       <div className="flex-container-standart">
         <ExistsInput />
-        <BalanceInput />
+        <BalanceInput address={address}/>
       </div>
       <div className="flex-container-standart">
         <TransferInput address={address} />

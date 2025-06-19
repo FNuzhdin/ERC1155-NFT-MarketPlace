@@ -20,6 +20,7 @@ type NFTCardProps = {
   refetch: (
     options?: RefetchOptions
   ) => Promise<QueryObserverResult<unknown, ReadContractErrorType>>;
+  price: bigint;
 };
 
 type Metadata = {
@@ -31,38 +32,35 @@ type Metadata = {
 /**
  * NFTCard component
  *
- * Displays metadata and allows purchasing of a single NFT from the marketplace.
+ * Displays NFT metadata and allows purchasing a single NFT from the marketplace.
+ *
+ * Key features and logic:
+ * - Receives the price as a prop from the parent component (prices are fetched in batch at the parent level).
+ * - Fetches the metadata URI from the token contract using `useTokenRead`.
+ * - Loads and validates NFT metadata (name, description, image) from IPFS when the URI changes.
+ * - Handles buy operations for the NFT via `writeMarket`. After purchase, triggers the parent's `refetch` to update the list and prices.
+ * - Disables the Buy button and displays a warning if the price is not set (undefined or zero).
+ * - Uses the `isMounted` pattern in async effects to avoid state updates on unmounted components.
  *
  * State variables:
- * - `metadataUri`: Holds the metadata URI (usually an IPFS CID) for the NFT.
- * - `metadata`: Parsed metadata object (name, description, image) fetched from IPFS.
- * - `error`: String for error messages, displayed to the user.
- * - `price`: Current NFT price in wei, fetched from the market contract.
- * - `load`: Boolean indicating if a buy transaction is in progress.
- *
- * Loads on-chain data using contract hooks for URI and price.
- * Fetches and validates metadata from IPFS.
- * Handles the buy operation with appropriate loading and error handling.
- * If the price is not set (undefined or zero), disables purchase and shows a warning.
+ * - `metadataUri`: the metadata URI for this NFT (typically an IPFS CID).
+ * - `metadata`: parsed NFT metadata (name, description, image) fetched from IPFS.
+ * - `error`: string for error messages, displayed to the user.
+ * - `load`: boolean indicating if a buy transaction is in progress.
  *
  * Props:
  * - `id`: NFT token ID (bigint)
- * - `address`: User wallet address
- * - `refetch`: Function to refetch parent/query data after purchase
+ * - `address`: user's wallet address
+ * - `refetch`: function to trigger parent/query data refresh after purchase
+ * - `price`: current NFT price in wei, passed from the parent (batch fetched)
  */
 
-const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
+const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch, price }) => {
   const { data: uri, isLoading: loadingUri } = useTokenRead("uri", [id]);
-  const {
-    data: currentPrice,
-    isLoading: loadingPrice,
-    refetch: refetchPrice,
-  } = useMarketRead("getPriceNFT", [id]);
 
   const [metadataUri, setMatadataUri] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [metadata, setMetadata] = useState<Metadata | undefined>(undefined);
-  const [price, setPrice] = useState<bigint | undefined>(undefined);
   const [load, setLoad] = useState<boolean>(false);
 
   useEffect(() => {
@@ -76,22 +74,13 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
     }
   }, [uri, loadingUri]);
 
-  useEffect(() => {
-    if (typeof currentPrice === "bigint") {
-      console.log(`Current token price (id: ${id}):  ${currentPrice}`);
-      setPrice(currentPrice);
-    } else {
-      console.log("currentPrice type isn't on format");
-      console.log("Price:", price);
-    }
-  }, [loadingPrice, currentPrice]);
-
   /**
-   * Loads and validates NFT metadata from IPFS whenever metadataUri changes.
-   * Sends a POST request to /api/get-ipfs-metadata.
-   * Sets metadata if valid, else sets error.
+   * Loads and validates NFT metadata from IPFS when metadataUri changes.
+   * Uses isMounted pattern to prevent setState on unmounted component.
    */
   useEffect(() => {
+    let isMounted = true;
+
     (async () => {
       if (metadataUri) {
         console.log("Metadata URI: ", metadataUri);
@@ -110,7 +99,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
           console.log("Metadata object:", obj);
 
           if (isMetadata(obj)) {
-            setMetadata(obj);
+            if(isMounted) setMetadata(obj);
           } else {
             console.error("Object from server have incorrect format");
             setError("Incorrect format metadata");
@@ -121,8 +110,16 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
         }
       } else console.log("metadata don't exists");
     })();
+
+    return () => {
+      isMounted = false; 
+    }
   }, [metadataUri]);
 
+  /**
+   * Handles NFT buy operation.
+   * After successful transaction, triggers refetch for parent data.
+   */
   const _handleClickBuy = async () => {
     setLoad(true);
     setError(undefined);
@@ -155,7 +152,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
         )}
         <div className="simple-row">
           <p className="orange-p">Price isn't set</p>
-          <SimpleButton onClick={() => refetchPrice()} disabled={loadingPrice}>
+          <SimpleButton disabled={false}>
             <IoIosRefresh />
           </SimpleButton>
         </div>
@@ -170,18 +167,29 @@ const NFTCard: React.FC<NFTCardProps> = ({ id, address, refetch }) => {
   return (
     <div className="vertical-stack">
       {!loadingUri && metadata && (
-        <div className="simple-row">
+        <div className="vertical-stack">
           <img
             className="img-limited"
             src={`https://ipfs.io/ipfs/${metadata?.image}`}
             alt="IPFS Image"
           />
-          <p>Name: {metadata.name}</p>
+          <div className="simple-row">
+            <p className="pink-p">Name:</p>
+            <p>{metadata.name}</p>
+          </div>
+          <div className="simple-row">
+            <p className="orange-p">id:</p>
+            <p>#{id}</p>
+          </div>
         </div>
       )}
       <div className="simple-row">
-        <p>Cost: {price} wei</p>
-        <SimpleButton onClick={() => refetchPrice()} disabled={loadingPrice}>
+        <div className="simple-row">
+          <p>Price:</p>
+          <p className="green-paragraph">{price}</p>
+          <p>wei</p>
+        </div>
+        <SimpleButton  disabled={false}>
           <IoIosRefresh />
         </SimpleButton>
       </div>

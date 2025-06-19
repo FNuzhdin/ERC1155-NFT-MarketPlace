@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import NFTCard from "@/components/Cards/NFTCard";
 import SimpleError from "@/components/Errors/SimpleError";
 
-import { useMarketRead } from "@/hooks/MarketContract";
+import { readMarket, useMarketRead } from "@/hooks/MarketContract";
 
 /**
  * MarketPlaceNFT component
@@ -39,25 +39,68 @@ import { useMarketRead } from "@/hooks/MarketContract";
 const MarketPlaceNFT: React.FC<{ address: `0x${string}` | undefined }> = ({
   address,
 }) => {
-  const { data: tokensArr, isLoading, refetch } = useMarketRead("getAllIdsNFTExhibited");
+  const {
+    data: tokensArr,
+    isLoading,
+    refetch,
+  } = useMarketRead("getAllIdsNFTExhibited");
   const [ids, setIds] = useState<bigint[]>([]);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [prices, setPrices] = useState<bigint[]>([]);
 
   useEffect(() => {
     if (Array.isArray(tokensArr)) {
       setIds(tokensArr);
     } else {
-      console.log("Ids array isn't loaded yet")
+      console.log("Ids array isn't loaded yet");
     }
   }, [tokensArr, isLoading]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      if (!ids || ids.length === 0) return;
+
+      try {
+        const currentPrices = await readMarket("getPriceNFTBatch", [ids]);
+        if (Array.isArray(currentPrices) && currentPrices.length !== 0) {
+          if (isMounted) setPrices(currentPrices);
+        } else {
+          throw new Error(
+            "Proglem with prices array: array length = 0 or data isn't array"
+          );
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [ids]);
+
+  if (ids.length === 0)
+    return (
+      <div>
+        <h1 className="h1">NFT</h1>
+        <h3 className="h3">No product</h3>
+      </div>
+    );
 
   return (
     <div>
       <h1 className="h1">NFT</h1>
       <ul className="containers-wrapper">
-        {ids.map((id) => (
+        {ids.map((id, index) => (
           <li className="flex-container-standart" key={id}>
-            <NFTCard id={id} address={address} refetch={refetch} />
+            <NFTCard
+              id={id}
+              address={address}
+              refetch={refetch}
+              price={prices[index]}
+            />
           </li>
         ))}
       </ul>

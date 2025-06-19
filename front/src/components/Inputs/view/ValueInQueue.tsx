@@ -90,7 +90,7 @@ const ValueInQueue: React.FC = () => {
         onChange={_handleChangeIndex}
         disabled={load}
       />
-      {result  && <p>Result: {result}</p>}
+      {result !== undefined  && <p>result: {result}</p>}
       <SimpleButton onClick={_handleClick} disabled={load}>
         get
       </SimpleButton>

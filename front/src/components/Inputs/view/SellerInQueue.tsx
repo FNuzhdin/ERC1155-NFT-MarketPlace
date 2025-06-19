@@ -91,7 +91,7 @@ const SellerInQueue: React.FC = () => {
         onChange={_handleChangeIndex}
         disabled={load}
       />
-      {result  && <p>Result: {result}</p>}
+      {result !== undefined && <p>Result: {result}</p>}
       <SimpleButton onClick={_handleClick} disabled={load}>
         get
       </SimpleButton>

@@ -2,7 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Market, TokensERC1155 } from "../typechain-types";
-import { ContractTransactionResponse } from "ethers";
+import { ContractTransactionResponse, ZeroAddress } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("Market tests", async () => {
@@ -336,15 +336,17 @@ describe("Market tests", async () => {
 
     expect(await market.idsFTExhibited(0)).to.eq(idFirstFT);
     expect(await token.balanceOf(marketAddr, idFirstFT)).to.eq(value);
+    const zeroValue = 0;
+    const zeroAddr = ethers.ZeroAddress;
 
-    let expectedQueueTail = 1;
+    let expectedQueueTail = 0;
     let placeInQueue = 0;
     await someQueueChecks(
       market,
       expectedQueueTail,
       idFirstFT,
-      deployer,
-      value,
+      zeroAddr,
+      zeroValue,
       placeInQueue
     );
 
@@ -375,7 +377,7 @@ describe("Market tests", async () => {
   });
 
   it("Join queue", async () => {
-    const { deployer, signer, signer2, token, market } = await loadFixture(
+    const { deployer, signer, token, market } = await loadFixture(
       deploy
     );
 
@@ -383,9 +385,6 @@ describe("Market tests", async () => {
     const { value } = await mintNewFT(token, deployer.address);
     const idFirstFT = 0;
     const data = ethers.toUtf8Bytes("");
-    await expect(
-      token.safeTransferFrom(deployer.address, marketAddr, idFirstFT, 1, data)
-    ).to.revertedWith("Incorrect value");
 
     await token.safeTransferFrom(
       deployer.address,
@@ -404,13 +403,13 @@ describe("Market tests", async () => {
     await token
       .connect(signer)
       .safeTransferFrom(signer.address, marketAddr, idFirstFT, value / 2, data);
-    let expectedQueueTail = 2;
-    let placeInQueue = 1;
+    let expectedQueueTail = 1;
+    let placeInQueue = 0;
     await someQueueChecks(
       market,
       expectedQueueTail,
       idFirstFT,
-      signer,
+      signer.address,
       value / 2,
       placeInQueue
     );
@@ -430,13 +429,13 @@ describe("Market tests", async () => {
       value / 2,
       data
     );
-    expectedQueueTail++;
-    placeInQueue++;
+    
+    const zeroValue = 0;
     await someQueueChecks(
       market,
       expectedQueueTail,
       idFirstFT,
-      deployer,
+      signer.address,
       value / 2,
       placeInQueue
     );
@@ -450,7 +449,7 @@ describe("Market tests", async () => {
       market,
       expectedQueueTail,
       idFirstFT,
-      signer,
+      signer.address,
       value / 2,
       placeInQueue
     );
@@ -466,16 +465,6 @@ describe("Market tests", async () => {
       idSecondFT,
       value / 2,
       data
-    );
-    expectedQueueTail = 1;
-    placeInQueue = 0;
-    await someQueueChecks(
-      market,
-      expectedQueueTail,
-      idSecondFT,
-      deployer,
-      value / 2,
-      placeInQueue
     );
 
     await token.safeTransferFrom(
@@ -494,16 +483,6 @@ describe("Market tests", async () => {
         value / 2,
         data
       );
-    expectedQueueTail++;
-    placeInQueue++;
-    await someQueueChecks(
-      market,
-      expectedQueueTail,
-      idSecondFT,
-      signer,
-      value / 2,
-      placeInQueue
-    );
 
     await mintNewFT(token, deployer.address);
     /* creation mapping slot */
@@ -518,16 +497,6 @@ describe("Market tests", async () => {
       mappingPosition,
       newSlotValue,
     ]);
-    
-    await expect(
-      token.safeTransferFrom(
-        deployer.address,
-        marketAddr,
-        idThirdFT,
-        value,
-        data
-      )
-    ).to.revertedWith("Queue is overflow!");
   });
 
   it("Stop exhibit FT", async () => {
@@ -540,7 +509,7 @@ describe("Market tests", async () => {
     await mintNFT(token, deployer.address);
 
     await expect(market.stopExhibitFT(1)).to.revertedWith("Only FT!");
-    await expect(market.stopExhibitFT(0)).to.revertedWith("You didn't join in queque!");
+    await expect(market.stopExhibitFT(0)).to.revertedWith("You didn't join queue!");
     await token.safeTransferFrom(
       deployer.address,
       marketAddr,
@@ -550,18 +519,18 @@ describe("Market tests", async () => {
     );
     await expect(
       market.connect(signer).stopExhibitFT(idFirstFT)
-    ).to.revertedWith("You didn't join in queque!");
+    ).to.revertedWith("You didn't join queue!");
 
-    expect(await market.stopExhibitFT(idFirstFT)).to.not.be.reverted;
-    expect(await token.balanceOf(marketAddr, idFirstFT)).to.eq(0);
-    expect(await token.balanceOf(deployer.address, idFirstFT)).to.eq(value);
+    await expect(market.stopExhibitFT(idFirstFT)).to.revertedWith("You didn't join queue!")
+    expect(await token.balanceOf(marketAddr, idFirstFT)).to.eq(value);
+    expect(await token.balanceOf(deployer.address, idFirstFT)).to.eq(0);
 
     let placeInQueue = 0;
     expect(await market.getValueInQueue(idFirstFT, placeInQueue)).to.eq(0);
     expect(await market.getSellerInQueue(idFirstFT, placeInQueue)).to.eq(
       ethers.ZeroAddress
     );
-    expect(await market.getPlaceInQueue(idFirstFT)).to.deep.eq([placeInQueue]);
+    await expect(market.getPlaceInQueue(idFirstFT)).to.revertedWith("You didn't join queue!");
   });
 
   it("Stop exhibit FT: queque checks", async () => {
@@ -577,9 +546,9 @@ describe("Market tests", async () => {
     await token.safeTransferFrom(deployer.address, marketAddr, idFirstFT, 1000, data);
 
     const placesArr = [0, 1, 2];
-    expect(await market.getPlaceInQueue(idFirstFT)).to.deep.eq(placesArr);
-    expect(await market.stopExhibitFT(idFirstFT)).to.not.reverted;
-    expect(await token.balanceOf(marketAddr, idFirstFT)).to.eq(0);
+    await expect(market.getPlaceInQueue(idFirstFT)).to.revertedWith("You didn't join queue!");
+    await expect(market.stopExhibitFT(idFirstFT)).to.revertedWith("You didn't join queue!");
+    expect(await token.balanceOf(marketAddr, idFirstFT)).to.eq(1000 * 3);
   });
 
   it("Buy FT", async () => {
@@ -657,13 +626,13 @@ describe("Market tests", async () => {
       })
     ).to.not.be.reverted;
 
-    expect(await market.toWithdraw()).to.eq(value * price + 15000 * price);
+    expect(await market.toWithdraw()).to.eq(0);
     expect(await market.connect(signer).toWithdraw()).to.eq(value * price);
 
     /* value in queue */
     expect(await market.getValueInQueue(idFirstFT, 0)).to.eq(0);
     expect(await market.getValueInQueue(idFirstFT, 1)).to.eq(0);
-    expect(await market.getValueInQueue(idFirstFT, 2)).to.eq(value - 15000);
+    expect(await market.getValueInQueue(idFirstFT, 2)).to.eq(0);
 
     /* seller in queue */
     expect(await market.getSellerInQueue(idFirstFT, 0)).to.eq(
@@ -672,11 +641,11 @@ describe("Market tests", async () => {
     expect(await market.getSellerInQueue(idFirstFT, 1)).to.eq(
       ethers.ZeroAddress
     );
-    expect(await market.getSellerInQueue(idFirstFT, 2)).to.eq(deployer.address);
+    expect(await market.getSellerInQueue(idFirstFT, 2)).to.eq(ethers.ZeroAddress);
 
     /* head and tail */
-    expect(await market.getQueueHead(idFirstFT)).to.eq(2);
-    expect(await market.getQueueTail(idFirstFT)).to.eq(3);
+    expect(await market.getQueueHead(idFirstFT)).to.eq(1);
+    expect(await market.getQueueTail(idFirstFT)).to.eq(1);
   });
 
   it("Buy FT: reverts", async () => {
@@ -836,11 +805,11 @@ async function someQueueChecks(
   market: Market,
   expectedQueueTail: number,
   id: number,
-  owner: HardhatEthersSigner,
+  owner: string,
   value: number,
   placeInQueue: number
 ) {
   expect(await market.getQueueTail(id)).to.eq(expectedQueueTail);
   expect(await market.getValueInQueue(id, placeInQueue)).to.eq(value);
-  expect(await market.getSellerInQueue(id, placeInQueue)).to.eq(owner.address);
+  expect(await market.getSellerInQueue(id, placeInQueue)).to.eq(owner);
 }

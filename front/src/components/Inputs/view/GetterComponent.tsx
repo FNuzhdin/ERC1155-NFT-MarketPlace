@@ -15,7 +15,7 @@ import { onlyNumbers } from "@/utils/FormatChecks";
  * GetterComponent
  *
  * A dashboard component for viewing market contract queue information and implementation version.
- * Intended for use in the view section of the app. Only onwer/admin can use this component. 
+ * Intended for use in the view section of the app. Only onwer/admin can use this component.
  *
  * Features:
  * - Displays the current implementation version of the market contract.
@@ -41,7 +41,7 @@ import { onlyNumbers } from "@/utils/FormatChecks";
  * - Only numeric ids are allowed.
  * - Fetches and displays version, queue head, and queue tail.
  * - Suitable for any user who needs to inspect queue state in the market contract.
- * - Only owner can use this component. 
+ * - Only owner can use this component.
  */
 
 const GetterComponent: React.FC = () => {
@@ -70,17 +70,17 @@ const GetterComponent: React.FC = () => {
 
   const _handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setId(e.target.value);
-  }
+  };
 
-  const _handleClick = async() => {
-    if(!onlyNumbers({param: id, setError})) return;
+  const _handleClick = async () => {
+    if (!onlyNumbers({ param: id, setError })) return;
 
     setLoad(true);
     setError(undefined);
     try {
       const resHead = await readMarket("getQueueHead", [id]);
       console.log("resHead:", resHead);
-      if(typeof resHead === "bigint") {
+      if (typeof resHead === "bigint") {
         setHead(resHead);
       } else {
         throw new Error("Type of head error");
@@ -88,12 +88,12 @@ const GetterComponent: React.FC = () => {
     } catch (e) {
       console.error(e);
       setError("Get head error");
-    } 
+    }
 
     try {
       const resTail = await readMarket("getQueueTail", [id]);
       console.log("resTail:", resTail);
-      if(typeof resTail === "bigint") {
+      if (typeof resTail === "bigint") {
         setTail(resTail);
       } else {
         throw new Error("Type of tail error");
@@ -105,7 +105,7 @@ const GetterComponent: React.FC = () => {
 
     setLoad(false);
     setId("");
-  }
+  };
 
   return (
     <div>
@@ -115,9 +115,18 @@ const GetterComponent: React.FC = () => {
       </div>
 
       <div className="simple-row">
-        <h2 className="h2-green">QueueHead: {load ? "Loading..." : head}</h2>
-        <h2 className="h2-green">QueueTail: {load ? "Loading..." : tail}</h2>
-        <SimpleInput 
+        <div className="vertical-stack">
+          <h2>
+            <span className="h2-green">QueueHead:</span>{" "}
+            {load ? "Loading..." : head}
+          </h2>
+          <h2>
+            <span className="h2-green">QueueTail:</span>{" "}
+            {load ? "Loading..." : tail}
+          </h2>
+          <SimpleError error={error} setError={setError} />
+        </div>
+        <SimpleInput
           placeholder={"id"}
           name={"id"}
           value={id}
@@ -131,8 +140,6 @@ const GetterComponent: React.FC = () => {
 
       <ValueInQueue />
       <SellerInQueue />
-
-      <SimpleError error={error} setError={setError} />
     </div>
   );
 };

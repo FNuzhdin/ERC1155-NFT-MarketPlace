@@ -4,6 +4,7 @@ import SimpleError from "../../Errors/SimpleError";
 import SimpleInput from "../SimpleInput";
 import { readToken } from "@/hooks/TokenContract";
 import { onlyNumbers } from "@/utils/FormatChecks";
+import { MARKET_ADDR } from "@/utils/ProvenAddresses";
 
 /**
  * BalanceInput component
@@ -34,7 +35,7 @@ import { onlyNumbers } from "@/utils/FormatChecks";
  * - Inputs are reset after a request.
  */
 
-const BalanceInput: React.FC = () => {
+const BalanceInput: React.FC<{address: `0x${string}` | undefined}> = ({address}) => {
   const [load, setLoad] = useState<boolean>(false);
   const [balanceData, setBalanceData] = useState<{
     id: string;
@@ -104,7 +105,12 @@ const BalanceInput: React.FC = () => {
             value={balanceData.account}
             onChange={_handleChange}
             disabled={load}
+            list="receiver-list"
           />
+          <datalist id="receiver-list">
+                    <option value={MARKET_ADDR} label="Market place address" />
+                    <option value={address} label="Your address" />
+          </datalist>
         </div>
         <SimpleButton disabled={load} onClick={_handleClick}>
           get

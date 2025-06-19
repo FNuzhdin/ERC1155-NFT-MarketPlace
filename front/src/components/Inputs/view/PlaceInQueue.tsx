@@ -73,7 +73,7 @@ const PlaceInQueue: React.FC<PlaceInQueueProps> = ({ address }) => {
         throw new Error("Problem with queue head!");
       }
 
-      setResult(places.map((place) => place - queHead));
+      setResult(places.map((place) => place - queHead).filter(p => p >= 0));
       console.log("Result:", result);
     } catch (e) {
       console.error("Place in queue error:", e);
@@ -100,7 +100,7 @@ const PlaceInQueue: React.FC<PlaceInQueueProps> = ({ address }) => {
       <SimpleButton disabled={load} onClick={_handleClick}>
         get
       </SimpleButton>
-      <p>You places in queue: {result}</p>
+      <p>You places in queue: {result.length === 0 ? "no places" : String(result)}</p>
       <SimpleError error={error} setError={setError} />
     </div>
   );

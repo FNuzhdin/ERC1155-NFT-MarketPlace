@@ -66,7 +66,7 @@ const StopExhibitNFTBatch: React.FC = () => {
     <div>
       <h2 className="h2-green">Stop exhibit a few NFT</h2>
       <SimpleInput
-        placeholder={"ids (1, 4, 5)"}
+        placeholder={"ids: 1, 4, 5"}
         name={"ids"}
         value={load ? "Loading..." : ids}
         onChange={_hanldeChange}

@@ -98,7 +98,7 @@ contract Market is Initializable,  OwnableUpgradeable {
      * @dev Reverts if the caller is not in the queue.
      */
     function getPlaceInQueue(uint256 id) public view returns(uint256[] memory) {
-        require(_placeInQueue[id][msg.sender].length != 0, "You didn't join queque!");
+        require(_placeInQueue[id][msg.sender].length != 0, "You didn't join queue!");
         return _placeInQueue[id][msg.sender];
     }
 
@@ -151,6 +151,16 @@ contract Market is Initializable,  OwnableUpgradeable {
         return _priceNFT[id];
     }
 
+    function getPriceNFTBatch(uint256[] memory ids) public view returns(uint256[] memory) {
+        uint256[] memory prices = new uint256[](ids.length); 
+
+        for(uint256 i = 0; i < ids.length; i++) {
+            prices[i] = _priceNFT[ids[i]];
+        }
+
+        return prices;
+    }
+
     /**
      * @notice Returns the price (in wei per token) for the given FT ID.
      * @param id FT token ID
@@ -196,39 +206,48 @@ contract Market is Initializable,  OwnableUpgradeable {
         require(_priceFT[id] > 0, "Cost isn't yet set!"); 
         require(msg.value == _priceFT[id] * value, "Incorrect msg.value!");
 
-        uint256 _currentValue;
-        uint256 newQueueHead;
+        uint256 head = _queueHead[id];
+        uint256 tail = _queueTail[id];
+        uint256 remaining = value;
 
-        /* изменяем очередь, отправляем средства */
-        for(uint256 i = _queueHead[id]; i < _queueTail[id]; i++) {
-            _currentValue += valueInQueue[id][i];
-            if (_currentValue >= value) {
-                uint256 remainder = _currentValue - value; 
-                uint256 valueForTransfer = valueInQueue[id][i] - remainder;
+        // Processing the queue of sellers (owner does not get into it)
+        for (uint256 i = head; i < tail && remaining > 0; i++) {
+            uint256 sellerValue = valueInQueue[id][i];
+            address currentSeller = sellerInQueue[id][i];
 
-                valueInQueue[id][i] = remainder;
+            if (sellerValue == 0) {
+                // Already processed, skip
+                head = i + 1;
+                continue;
+            }
 
-                // Credit proceeds to seller
-                _toWithdraw[sellerInQueue[id][i]] += valueForTransfer * _priceFT[id];
-                
-                newQueueHead = i; 
-                for(uint256 n = _queueHead[id]; n < newQueueHead; n++) {
-                    uint256 _valueForTransfer = valueInQueue[id][n];
-                    address currentSeller = sellerInQueue[id][n];
-                    delete valueInQueue[id][n];
-                    delete sellerInQueue[id][n];
+            if (sellerValue <= remaining) {
+                // Full fill, remove seller from queue
+                _toWithdraw[currentSeller] += sellerValue * _priceFT[id];
+                remaining -= sellerValue;
 
-                    _toWithdraw[currentSeller] += _valueForTransfer * _priceFT[id];
-                }
-                break;
+                // Clean up
+                delete valueInQueue[id][i];
+                delete sellerInQueue[id][i];
+                head = i + 1;
+            } else {
+                // Partial fill, update seller's remaining tokens
+                _toWithdraw[currentSeller] += remaining * _priceFT[id];
+                valueInQueue[id][i] = sellerValue - remaining;
+                remaining = 0;
+                // Do not advance head, seller still has tokens in queue
             }
         }
-
-        _queueHead[id] = newQueueHead; 
+        _queueHead[id] = head;
         
+        // If queue is empty, send funds to owner
+        if(remaining > 0) {
+            _toWithdraw[owner()] += remaining * _priceFT[id];
+        }
+
         // Transfer FT tokens to buyer
         token.safeTransferFrom(address(this), msg.sender, id, value, "");
-    }
+}
 
     /**
      * @notice Removes an exhibited NFT from sale and returns it to the owner.
@@ -270,7 +289,7 @@ contract Market is Initializable,  OwnableUpgradeable {
         uint256[] memory placeInQueue = _placeInQueue[id][msg.sender];
         uint256 tokenValueForTransfer;
 
-        require(placeInQueue.length != 0, "You didn't join in queque!");
+        require(placeInQueue.length != 0, "You didn't join queue!");
         for(uint256 i = 0; i < placeInQueue.length; i++) {
             tokenValueForTransfer += valueInQueue[id][placeInQueue[i]];
 
@@ -355,8 +374,12 @@ contract Market is Initializable,  OwnableUpgradeable {
             _joinExhibitedNFT(from, id);
         }
         
-        if (supply > 1) {
-            _joinQueue(from, id, value); 
+        if (supply > 1 && from != owner()) {
+            _joinQueue(from, id, value);
+            _joinExhibitedFT(id);
+        }
+
+        if(supply > 1 && from == owner()) {
             _joinExhibitedFT(id);
         }
 
@@ -388,8 +411,12 @@ contract Market is Initializable,  OwnableUpgradeable {
                 _joinExhibitedNFT(from, ids[i]);
             }
 
-            if (supply > 1) {
+            if (supply > 1 && from != owner()) {
                 _joinQueue(from, ids[i], values[i]);
+                _joinExhibitedFT(ids[i]);
+            }
+
+            if(supply > 1 && from == owner()) {
                 _joinExhibitedFT(ids[i]);
             }
         }
@@ -461,7 +488,7 @@ contract Market is Initializable,  OwnableUpgradeable {
             if (idsNFTExhibited[i] == id) { 
                 idsNFTExhibited[i] = idsNFTExhibited[idsNFTExhibited.length-1];
                 idsNFTExhibited.pop();
-                tokenOwner = exhibitedNFTOwners[i];
+                tokenOwner = exhibitedNFTOwners[id];
                 exhibitedNFTOwners[id] = address(0);
             }
         }

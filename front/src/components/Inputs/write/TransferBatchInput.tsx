@@ -46,6 +46,7 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
   const [load, setLoad] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [hash, setHash] = useState<string>("");
+  const [checked, setChacked] = useState<boolean>(false);
 
   console.log("Component 'TransferBatchInput' booted");
 
@@ -68,8 +69,10 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
       return;
     }
 
-    if(!onlyNumbersComma({param: transferData.id, setError})) return;
-    if(!onlyNumbersComma({param: transferData.value, setError})) return;
+    if (!onlyNumbersComma({ param: transferData.id, setError })) return;
+    if (!checked) {
+      if (!onlyNumbersComma({ param: transferData.value, setError })) return;
+    };
 
     if (address === transferData.receiver) {
       setError("Don't transfer youself");
@@ -80,7 +83,14 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
     setError(undefined);
     try {
       const ids = transferData.id.split(",").map((i) => i.trim());
-      const values = transferData.value.split(",").map((i) => i.trim());
+
+      let values: bigint[];
+      if (checked) {
+        values = Array.from({length: ids.length}, () => BigInt(1));
+      } else {
+        values = transferData.value.split(",").map((i) => BigInt(i.trim()));
+      }
+      
       const hash = await writeToken("safeBatchTransferFrom", [
         address,
         transferData.receiver,
@@ -113,10 +123,10 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
           value={transferData.receiver}
           onChange={_handleChange}
           disabled={load}
-          list={"receiver-list"}
+          list={"receiver-list1"}
         />
-        <datalist id="receiver-list">
-          <option value={MARKET_ADDR} label="Market place address"/>
+        <datalist id="receiver-list1">
+          <option value={MARKET_ADDR} label="Market place address" />
         </datalist>
         <SimpleInput
           placeholder={"id (1, 33, 5)"}
@@ -125,13 +135,24 @@ const TransferBatchInput: React.FC<{ address: `0x${string}` | undefined }> = ({
           onChange={_handleChange}
           disabled={load}
         />
+        {!checked &&
         <SimpleInput
           placeholder={"value (1, 1200, 1)"}
           name={"value"}
           value={transferData.value}
           onChange={_handleChange}
           disabled={load}
-        />
+        />}
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => setChacked(e.target.checked)}
+            className="checkbox-input"
+          />
+          <span className="custom-checkbox"></span>
+          Only NFT
+        </label>
         {hash && (
           <p>hash: {hash.substring(0, 6) + "..." + hash.substring(60, 65)}</p>
         )}

@@ -75,7 +75,7 @@ const WithdrawBatchInput: React.FC = () => {
       <h2 className="h2-green">Withdraw batch</h2>
       <div className="simple-row">
         <SimpleInput
-          placeholder={"id"}
+          placeholder={"id: 5, 1, 10"}
           name={"id"}
           value={id}
           onChange={_handleChange}

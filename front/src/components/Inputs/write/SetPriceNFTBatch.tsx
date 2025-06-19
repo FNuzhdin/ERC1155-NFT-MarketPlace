@@ -92,14 +92,14 @@ const SetPriceNFTBatch: React.FC = () => {
     <div>
       <h2 className="h2-green">Set price a few NFT</h2>
       <SimpleInput
-        placeholder={"ids (1, 4, 5)"}
+        placeholder={"ids: 1, 4, 5"}
         name={"ids"}
         value={load ? "Loading..." : data.ids}
         onChange={_hanldeChange}
         disabled={load}
       />
       <SimpleInput
-        placeholder={"prices in wei (100, 40, 50)"}
+        placeholder={"prices (wei): 100, 40, 50"}
         name={"prices"}
         value={load ? "Loading..." : data.prices}
         onChange={_hanldeChange}
