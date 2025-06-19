@@ -3,7 +3,6 @@
 import { useDisconnect, useConnect, injected, useBalance } from "wagmi";
 import { ethers } from "ethers";
 import { useTokenRead } from "@/hooks/TokenContract";
-import type { Chain } from "wagmi/chains";
 
 import type { IsAdmin } from "../../app/App";
 import { useMarketRead } from "@/hooks/MarketContract";

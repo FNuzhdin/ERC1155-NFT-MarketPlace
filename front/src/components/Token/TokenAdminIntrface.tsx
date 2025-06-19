@@ -11,7 +11,7 @@ import TransferInput from "../Inputs/write/TransferInput";
 import TransferBatchInput from "../Inputs/write/TransferBatchInput";
 import WithdrawBatchInput from "../Inputs/write/WithdrawBatchInput";
 import WithdrawInput from "../Inputs/write/WithdrawInput";
-import MainMint from "../Inputs/mint/MainMInt";
+import MainMint from "../Inputs/mint/MainMint";
 
 type TokenAdminInterfaceProps = {
   address: `0x${string}` | undefined;

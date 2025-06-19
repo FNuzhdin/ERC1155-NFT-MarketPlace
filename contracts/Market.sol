@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.28;
 
 import "contracts/TokensERC1155.sol";
@@ -13,7 +14,7 @@ import "node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeab
  * @dev Supports upgradeability via Initializable & OwnableUpgradeable. 
  * Manages queue-based FT order book and non-custodial ETH withdrawal for sellers.
  */
-contract Market is Initializable,  OwnableUpgradeable {
+contract Market is Initializable, OwnableUpgradeable {
     /**
      * @notice Current implementation version of the Market 
      * contract (for upgradeability)

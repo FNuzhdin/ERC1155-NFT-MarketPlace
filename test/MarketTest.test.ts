@@ -626,7 +626,7 @@ describe("Market tests", async () => {
       })
     ).to.not.be.reverted;
 
-    expect(await market.toWithdraw()).to.eq(0);
+    expect(await market.toWithdraw()).to.eq(5500000);
     expect(await market.connect(signer).toWithdraw()).to.eq(value * price);
 
     /* value in queue */

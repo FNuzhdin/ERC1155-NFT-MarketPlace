@@ -12,7 +12,7 @@ const config: HardhatUserConfig = {
     settings: {
       outputSelection: {
         "*": {
-          "*": ["storageLayout"] /* добавил для того, чтобы найти слот */
+          "*": ["storageLayout"] 
         }
       }
     },
