@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { MintInputProps } from "./MainMint";
+import type { MintInputProps } from "./mainmint_t";
 import ImagePreview from "@/components/Cards/ImagePreview";
 import SimpleError from "@/components/Errors/SimpleError";
 import { readToken, writeToken } from "@/hooks/TokenContract";
