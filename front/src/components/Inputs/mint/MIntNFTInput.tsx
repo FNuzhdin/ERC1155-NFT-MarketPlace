@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { MintInputProps } from "./mainmint_t";
+import type { MintInputProps } from "./MainMint";
 
 import { readToken, writeToken } from "@/hooks/TokenContract";
 import { ethers } from "ethers";
