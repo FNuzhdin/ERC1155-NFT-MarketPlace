@@ -7,17 +7,17 @@ const pinata = new PinataSDK({
 
 /**
  * POST /api/upload-metadata-NFT
- * 
+ *
  * Uploads multiple images and their metadata to IPFS via Pinata in batch mode.
- * 
+ *
  * Expects multipart/form-data:
  * - file: PNG image files (can be multiple, same field name)
  * - names: JSON-stringified array of names
  * - descriptions: JSON-stringified array of descriptions
  * - currentId: stringified integer (used for file naming)
- * 
+ *
  * Images and metadata are matched by index.
- * 
+ *
  * Responds (200):
  * {
  *   "imageUri": "bafy.../",
@@ -26,18 +26,18 @@ const pinata = new PinataSDK({
  *   "metadataCID": "bafy...",
  *   "length": 3
  * }
- * 
+ *
  * Metadata example (for each NFT):
  * {
  *   "name": "tokenName",
  *   "description": "tokenDescription",
  *   "image": "bafy.../image_1.png"
  * }
- * 
- * Errors: 
+ *
+ * Errors:
  * - 400: missing fields, or files/count mismatch
  * - 500: upload errors
- * 
+ *
  * Requires env: PINATA_JWT
  */
 
@@ -51,10 +51,12 @@ export async function POST(req: NextRequest) {
     const namesStr = formData.get("names") as string | null;
     const descriptionsStr = formData.get("descriptions") as string | null;
     const currentIdStr = formData.get("currentId") as string | null;
-    const length = imageFiles.length; 
+    const length = imageFiles.length;
 
     if (!namesStr || !descriptionsStr || !currentIdStr) {
-      return new Response("Missing names, descriptions or currentId", { status: 400 });
+      return new Response("Missing names, descriptions or currentId", {
+        status: 400,
+      });
     }
 
     const names = JSON.parse(namesStr);
@@ -66,13 +68,14 @@ export async function POST(req: NextRequest) {
       imageFiles.length !== names.length ||
       imageFiles.length !== descriptions.length
     ) {
-      return new Response("Files, names and descriptions count mismatch", { status: 400 });
+      return new Response("Files, names and descriptions count mismatch", {
+        status: 400,
+      });
     }
 
     // Rename for pinata
     const web3Files = await Promise.all(
       imageFiles.map(async (file, i) => {
-
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -84,8 +87,8 @@ export async function POST(req: NextRequest) {
     // Upload images
     const imageUpload = await pinata.upload.fileArray(web3Files);
     const imageCID = imageUpload.IpfsHash;
-    const imageBaseURI = `${imageCID}/`; 
- 
+    const imageBaseURI = `${imageCID}/`;
+
     // Preparing metadata
     const metadataFiles = names.map((name: any, i: any) => {
       const metadata = {
@@ -105,7 +108,7 @@ export async function POST(req: NextRequest) {
     // Upload metadata
     const metadataUpload = await pinata.upload.fileArray(metadataFiles);
     const metadataCID = metadataUpload.IpfsHash;
-    const metadataBaseURI = `${metadataCID}/`; 
+    const metadataBaseURI = `${metadataCID}/`;
 
     console.log("POST status: succes!");
     return new Response(
@@ -118,9 +121,15 @@ export async function POST(req: NextRequest) {
       }),
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("POST status: error!");
     console.error("Upload error:", err);
-    return new Response("Upload failed: " + err.message, { status: 500 });
+
+    let message = "Unknown error";
+    if (typeof err === "object" && err !== null && "message" in err) {
+      message = String((err as { message: unknown }).message);
+    }
+
+    return new Response("Upload failed: " + message, { status: 500 });
   }
 }

@@ -21,7 +21,7 @@ import type { Address } from "viem";
  * Usage example:
  *   const { data, isLoading, error } = useMarketRead("getOwner", []);
  */
-export function useMarketRead(functionName: string, args: any[] = [], account?: Address) {
+export function useMarketRead(functionName: string, args: unknown[] = [], account?: Address) {
   console.log("reading market contract...");
   return useReadContract({
     address: MARKET_ADDR,
@@ -44,7 +44,7 @@ export function useMarketWrite() {
   const { writeContract, data, isPending, isSuccess, error } =
     useWriteContract();
   console.log("writing market contarct...");
-  function write(functionName: string, args: any[] = [], account?: Address) {
+  function write(functionName: string, args: unknown[] = [], account?: Address) {
     return writeContract({
       address: MARKET_ADDR,
       abi: Artifact.abi,
@@ -66,7 +66,7 @@ export function useMarketWrite() {
  */
 export async function readMarket(
   functionName: string,
-  args: any[] = [],
+  args: unknown[] = [],
   account?: Address
 ) {
   console.log("reading market contract...");
@@ -86,7 +86,7 @@ export async function readMarket(
  * Usage example:
  *   const tx = await writeMarket("buyToken", [tokenId], account, ethers.parseEther("0.1"));
  */
-export async function writeMarket(functionName: string, args: any[] = [], account?: Address, ethValue?: bigint) {
+export async function writeMarket(functionName: string, args: unknown[] = [], account?: Address, ethValue?: bigint) {
   console.log("writing market contarct...");
   return await writeContract(wagmiConfig, {
     abi: Artifact.abi,

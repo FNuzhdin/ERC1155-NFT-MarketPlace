@@ -1,7 +1,7 @@
 // Custom hooks and utility functions for interacting with the TokenERC1155 smart-contract.
 // Uses wagmi and viem for contract interaction and state management.
 
-import { useReadContract, useWriteContract } from "wagmi";
+import { useReadContract } from "wagmi";
 import Artifact from "../../artifacts/TokensERC1155.json"
 import { TOKEN_ADDR } from "@/utils/ProvenAddresses";
 import type { Address } from "viem";
@@ -19,7 +19,7 @@ import { wagmiConfig } from "@/app/page";
  * Usage example:
  *   const { data, isLoading, error } = useTokenRead("balanceOf", [address, tokenId]);
  */
-export function useTokenRead(functionName: string, args: any[] = [], account?: Address ) {
+export function useTokenRead(functionName: string, args: unknown[] = [], account?: Address ) {
   console.log("reading token contract...");
   return useReadContract({
     address: TOKEN_ADDR,
@@ -37,7 +37,7 @@ export function useTokenRead(functionName: string, args: any[] = [], account?: A
  * Usage example:
  *   const result = await readToken("balanceOf", [address, tokenId]);
  */
-export async function readToken(functionName: string, args: any[] = [], account?: Address) {
+export async function readToken(functionName: string, args: unknown[] = [], account?: Address) {
   console.log("reading token contract...");
   return await readContract(wagmiConfig, {
     abi: Artifact.abi,
@@ -54,7 +54,7 @@ export async function readToken(functionName: string, args: any[] = [], account?
  * Usage example:
  *   const tx = await writeToken("mint", [to, tokenId, amount]);
  */
-export async function writeToken(functionName: string, args: any[] = []) {
+export async function writeToken(functionName: string, args: unknown[] = []) {
   console.log("writing token contract...");
   return await writeContract(wagmiConfig, {
     abi: Artifact.abi,

@@ -28,7 +28,7 @@ import { NextRequest, NextResponse } from "next/server";
  * Requires env: PINATA_JWT
  */
 
-export async function POST(req: NextRequest, res: NextResponse) {
+export async function POST(req: NextRequest) {
 
   const { cid } = await req.json();
   console.log('Received the cid:', cid);
@@ -67,9 +67,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     const data = await response.json();
     return NextResponse.json(data, { status:  200});
-  } catch (error: any) {
+  } catch (error: unknown) {
+
+    let message = "Unknown error";
+    if(typeof error === "object" && error !== null && "message" in error) {
+      message = String((error as {message: unknown}).message);
+    }
+
     return NextResponse.json(
-      { error: error.message || "Unknown error"}, 
+      { error: message || "Unknown error"}, 
       { status: 500}
     );
   }

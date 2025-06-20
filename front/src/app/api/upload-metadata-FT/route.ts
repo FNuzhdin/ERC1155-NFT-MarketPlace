@@ -107,9 +107,15 @@ export async function POST(req: NextRequest) {
       }),
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("POST status: error!");
     console.error("Upload error:", err);
-    return new Response("Upload failed: " + err.message, { status: 500 });
+
+    let message = "Unknown error";
+    if (typeof err === "object" && err !== null && "message" in err) {
+      message = String((err as { message: unknown }).message);
+    }
+
+    return new Response("Upload failed: " + message, { status: 500 });
   }
 }
