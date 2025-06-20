@@ -1,18 +1,16 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
-import WalletAndInfo from "../components/WalletConnect/WalletAndInfo";
-import MarketPlace from "../components/Market/MarketPlace";
+import WalletAndInfo from "../WalletConnect/WalletAndInfo";
+import MarketPlace from "../Market/MarketPlace";
 
-import SimpleButton from "../components/Buttons/SimpleButton";
-import TokenAdminInterface from "../components/Token/TokenAdminIntrface";
-import MarketAdminInterface from "../components/Market/MarketAdminInterface";
-import TokenUserInterface from "../components/Token/TokenUserInterface";
-import MarketUserInterface from "../components/Market/MarketUserInterface";
+import SimpleButton from "../Buttons/SimpleButton";
+import TokenAdminInterface from "../Token/TokenAdminIntrface";
+import MarketAdminInterface from "../Market/MarketAdminInterface";
+import TokenUserInterface from "../Token/TokenUserInterface";
+import MarketUserInterface from "../Market/MarketUserInterface";
 
-import orange_192 from "../images/orange_192.png";
+import orange_192 from "@/images/orange_192.png"
 
 export type IsAdmin = {
   adminToken: boolean;
@@ -27,13 +25,13 @@ export type IsAdmin = {
  * - Shows wallet/info panel with WalletAndInfo.
  * - Warns if network is not hardhat or sepolia.
  * - Handles hydration before render.
- * 
+ *
  * State:
  * - admin: user admin rights for token/market
  * - show: active tab/interface
  * - showInfo: toggle info panel
  * - hydrated: hydration status
- * 
+ *
  * Dependencies: wagmi, WalletAndInfo, MarketPlace, Token/Market[Admin|User]Interface, SimpleButton, orange_192.png
  */
 

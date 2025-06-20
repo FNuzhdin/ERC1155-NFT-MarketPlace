@@ -6,7 +6,7 @@
 import { useReadContract, useWriteContract } from "wagmi";
 import Artifact from "../../artifacts/Market.json";
 import { MARKET_ADDR } from "@/utils/ProvenAddresses";
-import { wagmiConfig } from "@/app/page";
+import { wagmiConfig } from "@/config/wagmiConfig";
 import { writeContract, readContract } from "wagmi/actions";
 import type { Address } from "viem";
 

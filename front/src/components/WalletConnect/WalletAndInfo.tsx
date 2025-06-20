@@ -4,7 +4,7 @@ import { useDisconnect, useConnect, injected, useBalance } from "wagmi";
 import { ethers } from "ethers";
 import { useTokenRead } from "@/hooks/TokenContract";
 
-import type { IsAdmin } from "../../app/App";
+import type { IsAdmin } from "../App/App";
 import { useMarketRead } from "@/hooks/MarketContract";
 import { useEffect, useState } from "react";
 

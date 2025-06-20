@@ -6,7 +6,7 @@ import Artifact from "../../artifacts/TokensERC1155.json"
 import { TOKEN_ADDR } from "@/utils/ProvenAddresses";
 import type { Address } from "viem";
 import { readContract, writeContract } from "wagmi/actions";
-import { wagmiConfig } from "@/app/page";
+import { wagmiConfig } from "@/config/wagmiConfig";
 
 /**
  * React hook to read data from the TokenERC1155 contract using wagmi's useReadContract.
