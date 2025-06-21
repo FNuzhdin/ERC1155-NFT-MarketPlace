@@ -2,8 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Market, TokensERC1155 } from "../typechain-types";
-import { ContractTransactionResponse, ZeroAddress } from "ethers";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { ContractTransactionResponse } from "ethers";
 
 describe("Market tests", async () => {
   async function deploy() {
