@@ -15,7 +15,7 @@ This repository contains a full-featured NFT & FT marketplace built on the ERC11
 - **Decentralized:** Metadata is stored on IPFS.
 - **Upgradable:** Marketplace contract uses proxy pattern for seamless upgrades.
 
-Try the live app on [Vercel](https://erc1155-nft-marketplace.vercel.app/)  
+Try the live app on [Vercel](https://erc-1155-nft-market-place.vercel.app/)  
 Explore the [source code](https://github.com/FNuzhdin/ERC1155-NFT-MarketPlace)  
 Watch the [video presentation](https://youtu.be/wH5yvg_A_BQ)
 
